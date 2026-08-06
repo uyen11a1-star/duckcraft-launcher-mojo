@@ -48,6 +48,7 @@ public class RendererCompatUtil {
             // freedreno is available only on Adreno GPUs
             if(rendererId.contains("freedreno") && (!(GLInfoUtils.getGlInfo().isAdreno()) || !deviceCompatibleMesa)) continue;
             if(rendererId.contains("ltw") && (!deviceHasOpenGLES3 || !appHasLtw)) continue;
+            if(rendererId.contains("mobileglues") && !deviceHasOpenGLES3) continue;
             rendererIds.add(rendererId);
             rendererNames.add(defaultRendererNames[i]);
         }

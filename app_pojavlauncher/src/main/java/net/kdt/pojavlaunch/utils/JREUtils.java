@@ -249,6 +249,11 @@ public class JREUtils {
                 glesVersion = 3;
                 if(preloadVk) preloadVulkan(); // Zink requires Vulkan library to be preloaded
                 break;
+            case "mobileglues":
+                renderLibrary = "libmobileglues.so";
+                useGles = true;
+                glesVersion = 3;
+                break;
             case "opengles3_ltw" :
                 renderLibrary = "libltw.so";
                 useGles = true;

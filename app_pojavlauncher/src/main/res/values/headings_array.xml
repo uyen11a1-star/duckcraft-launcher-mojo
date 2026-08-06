@@ -40,6 +40,7 @@
         <item>vulkan_zink</item> <!-- zink with OpenGL (undef) -->
         <item>freedreno_kgsl</item> <!-- freedreno gallium driver with OpenGL 4.6 -->
         <item>opengles3_ltw</item> <!-- GL Core on GLES wrapper with GL3/4 -->
+    <item>mobileglues</item> <!-- MobileGlues renderer, OpenGL over Vulkan/GLES -->
     </string-array>
     <string-array name="download_source_names">
         <item>@string/global_default</item>
