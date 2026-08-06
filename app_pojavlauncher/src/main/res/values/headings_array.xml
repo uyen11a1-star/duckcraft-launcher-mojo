@@ -5,6 +5,7 @@
         <item name="2">@string/mcl_setting_renderer_vulkan_zink</item>
         <item name="3">@string/mcl_setting_renderer_freedreno_kgsl</item>
         <item name="4">@string/mcl_setting_renderer_ltw</item>
+    <item name="5">MobileGlues</item>
     </string-array>
 
     <string-array name="menu_customcontrol">
