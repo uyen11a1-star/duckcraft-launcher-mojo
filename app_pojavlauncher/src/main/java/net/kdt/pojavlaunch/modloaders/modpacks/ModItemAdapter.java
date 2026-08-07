@@ -176,10 +176,18 @@ public class ModItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     mExtendedSpinner = mExtendedLayout.findViewById(R.id.mod_extended_version_spinner);
                     mExtendedErrorTextView = mExtendedLayout.findViewById(R.id.mod_extended_error_textview);
 
-                    mExtendedButton.setOnClickListener(v1 -> mModpackApi.handleModpackInstallation(
-                            mExtendedButton.getContext().getApplicationContext(),
-                            mModDetail,
-                            mExtendedSpinner.getSelectedItemPosition()));
+                    mExtendedButton.setOnClickListener(v1 -> {
+                        android.content.Context appContext = mExtendedButton.getContext().getApplicationContext();
+                        int selected = mExtendedSpinner.getSelectedItemPosition();
+                        if (mSearchFilters.isModpack) {
+                            mModpackApi.handleModpackInstallation(appContext, mModDetail, selected);
+                        } else {
+                            File instanceDir = net.kdt.pojavlaunch.instances.Instances.loadSelectedInstance().getGameDirectory();
+                            String subfolder = mSearchFilters.isResourcePack ? "resourcepacks" : "mods";
+                            File targetDir = new File(instanceDir, subfolder);
+                            mModpackApi.handleFileInstallation(appContext, mModDetail, selected, targetDir);
+                        }
+                    });
                     mExtendedSpinner.setAdapter(mLoadingAdapter);
                 } else {
                     if(isExtended()) closeDetailedView();

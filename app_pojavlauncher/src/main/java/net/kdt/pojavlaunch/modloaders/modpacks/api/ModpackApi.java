@@ -15,6 +15,11 @@ import net.kdt.pojavlaunch.modloaders.modpacks.models.SearchResult;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.net.URL;
+import net.kdt.pojavlaunch.utils.FileUtils;
 
 /**
  *
@@ -71,4 +76,24 @@ public interface ModpackApi {
      * @param selectedVersion The selected version
      */
     ModLoader installModpack(ModDetail modDetail, int selectedVersion) throws IOException;
+
+    default void handleFileInstallation(Context context, ModDetail modDetail, int selectedVersion, File targetDir) {
+        ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 0, R.string.global_waiting);
+        PojavApplication.sExecutorService.execute(() -> {
+            try {
+                FileUtils.ensureDirectory(targetDir);
+                String url = modDetail.versionUrls[selectedVersion];
+                String fileName = url.substring(url.lastIndexOf('/') + 1);
+                File targetFile = new File(targetDir, fileName);
+                try (InputStream in = new URL(url).openStream(); OutputStream out = new FileOutputStream(targetFile)) {
+                    byte[] buffer = new byte[8192];
+                    int len;
+                    while ((len = in.read(buffer)) != -1) out.write(buffer, 0, len);
+                }
+            } catch (IOException e) {
+                Tools.showErrorRemote(context, R.string.modpack_install_download_failed, e);
+            }
+        });
+    }
+
 }

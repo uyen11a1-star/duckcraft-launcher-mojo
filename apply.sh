@@ -1,0 +1,22 @@
+#!/data/data/com.termux/files/usr/bin/bash
+cd ~/duckcraft-launcher3
+
+# 1. SearchFilters.java - add isResourcePack field
+sed -i 's/public boolean isModpack;/public boolean isModpack;\n    public boolean isResourcePack;/' app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/modloaders/modpacks/models/SearchFilters.java
+
+# 2. ModrinthApi.java - support mod/resourcepack/modpack
+sed -i 's|facetString.append(String.format("\[\\"project_type:%s\\"\]", searchFilters.isModpack ? "modpack" : "mod"));|String projectType = searchFilters.isModpack ? "modpack" : (searchFilters.isResourcePack ? "resourcepack" : "mod");\n        facetString.append(String.format("[\\"project_type:%s\\"]", projectType));|' app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/modloaders/modpacks/api/ModrinthApi.java
+
+# 3. ModpackApi.java - add imports + download method
+sed -i 's/import java.io.IOException;/import java.io.IOException;\nimport java.io.InputStream;\nimport java.io.OutputStream;\nimport java.io.FileOutputStream;\nimport java.net.URL;\nimport net.kdt.pojavlaunch.utils.FileUtils;/' app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/modloaders/modpacks/api/ModpackApi.java
+
+sed -i -z 's|ModLoader installModpack(ModDetail modDetail, int selectedVersion) throws IOException;|ModLoader installModpack(ModDetail modDetail, int selectedVersion) throws IOException;\n\n    default void handleFileInstallation(Context context, ModDetail modDetail, int selectedVersion, File targetDir) {\n        ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 0, R.string.global_waiting);\n        PojavApplication.sExecutorService.execute(() -> {\n            try {\n                FileUtils.ensureDirectory(targetDir);\n                String url = modDetail.versionUrls[selectedVersion];\n                String fileName = url.substring(url.lastIndexOf(\x27/\x27) + 1);\n                File targetFile = new File(targetDir, fileName);\n                try (InputStream in = new URL(url).openStream(); OutputStream out = new FileOutputStream(targetFile)) {\n                    byte[] buffer = new byte[8192];\n                    int len;\n                    while ((len = in.read(buffer)) != -1) out.write(buffer, 0, len);\n                }\n            } catch (IOException e) {\n                Tools.showErrorRemote(context, R.string.modpack_install_download_failed, e);\n            }\n        });\n    }|' app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/modloaders/modpacks/api/ModpackApi.java
+
+# 4. ModItemAdapter.java - conditional install (modpack vs mod/resourcepack)
+sed -i -z 's|mExtendedButton.setOnClickListener(v1 -> mModpackApi.handleModpackInstallation(\n                            mExtendedButton.getContext().getApplicationContext(),\n                            mModDetail,\n                            mExtendedSpinner.getSelectedItemPosition()));|mExtendedButton.setOnClickListener(v1 -> {\n                        android.content.Context appContext = mExtendedButton.getContext().getApplicationContext();\n                        int selected = mExtendedSpinner.getSelectedItemPosition();\n                        if (mSearchFilters.isModpack) {\n                            mModpackApi.handleModpackInstallation(appContext, mModDetail, selected);\n                        } else {\n                            File instanceDir = net.kdt.pojavlaunch.instances.Instances.loadSelectedInstance().getGameDirectory();\n                            String subfolder = mSearchFilters.isResourcePack ? "resourcepacks" : "mods";\n                            File targetDir = new File(instanceDir, subfolder);\n                            mModpackApi.handleFileInstallation(appContext, mModDetail, selected, targetDir);\n                        }\n                    });|' app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/modloaders/modpacks/ModItemAdapter.java
+
+echo "=== Kiểm tra kết quả ==="
+grep -n "isResourcePack" app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/modloaders/modpacks/models/SearchFilters.java
+grep -n "projectType" app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/modloaders/modpacks/api/ModrinthApi.java
+grep -n "handleFileInstallation" app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/modloaders/modpacks/api/ModpackApi.java
+grep -n "isResourcePack\|Instances.loadSelectedInstance" app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/modloaders/modpacks/ModItemAdapter.java
