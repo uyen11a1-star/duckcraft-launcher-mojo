@@ -2,6 +2,7 @@ package net.kdt.pojavlaunch.modloaders.modpacks.api;
 
 
 import android.content.Context;
+import android.widget.Toast;
 
 import com.kdt.mcgui.ProgressLayout;
 
@@ -77,6 +78,10 @@ public interface ModpackApi {
      */
     ModLoader installModpack(ModDetail modDetail, int selectedVersion) throws IOException;
 
+    /**
+     * Tải trực tiếp 1 mod/resourcepack đơn lẻ vào thư mục instance đang chọn
+     * (khác installModpack: không tạo instance mới, không giải nén gì cả)
+     */
     default void handleFileInstallation(Context context, ModDetail modDetail, int selectedVersion, File targetDir) {
         ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 0, R.string.global_waiting);
         PojavApplication.sExecutorService.execute(() -> {
@@ -90,7 +95,10 @@ public interface ModpackApi {
                     int len;
                     while ((len = in.read(buffer)) != -1) out.write(buffer, 0, len);
                 }
+                ProgressLayout.clearProgress(ProgressLayout.INSTALL_MODPACK);
+                Tools.runOnUiThread(() -> Toast.makeText(context, R.string.file_install_success, Toast.LENGTH_SHORT).show());
             } catch (IOException e) {
+                ProgressLayout.clearProgress(ProgressLayout.INSTALL_MODPACK);
                 Tools.showErrorRemote(context, R.string.modpack_install_download_failed, e);
             }
         });
