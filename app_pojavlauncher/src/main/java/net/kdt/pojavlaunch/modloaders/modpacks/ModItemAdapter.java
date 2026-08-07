@@ -1,5 +1,6 @@
 package net.kdt.pojavlaunch.modloaders.modpacks;
 
+import java.io.File;
 import android.annotation.SuppressLint;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
