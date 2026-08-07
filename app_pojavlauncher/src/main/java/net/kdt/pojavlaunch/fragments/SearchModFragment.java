@@ -175,6 +175,14 @@ public class SearchModFragment extends Fragment implements ModItemAdapter.Search
         mImportButton.setOnClickListener(v -> {
             mImportLauncher.launch("*/*");
         });
+
+        if (mSearchFilters.isModpack) {
+            mSearchEditText.setHint(R.string.hint_search_modpack);
+            mImportButton.setVisibility(View.VISIBLE);
+        } else {
+            mImportButton.setVisibility(View.GONE);
+            mSearchEditText.setHint(mSearchFilters.isResourcePack ? R.string.hint_search_resourcepack : R.string.hint_search_mod);
+        }
         mTaskCountListener = taskCount -> {
             runOnUiThread(() -> mImportButton.setEnabled(taskCount == 0));
             return false;

@@ -509,4 +509,6 @@
     <string name="browse_content_title">What do you want to install?</string>
     <string name="browse_content_mod">Mod</string>
     <string name="browse_content_resourcepack">Resource Pack</string>
+    <string name="hint_search_mod">Search mods...</string>
+    <string name="hint_search_resourcepack">Search resource packs...</string>
 </resources>
