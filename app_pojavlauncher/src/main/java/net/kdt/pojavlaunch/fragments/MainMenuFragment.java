@@ -14,6 +14,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.kdt.mcgui.mcVersionSpinner;
@@ -54,6 +55,7 @@ public class MainMenuFragment extends Fragment {
         Button mInstallJarButton = view.findViewById(R.id.install_jar_button);
         Button mShareLogsButton = view.findViewById(R.id.share_logs_button);
         Button mOpenDirectoryButton = view.findViewById(R.id.open_files_button);
+        Button mBrowseContentButton = view.findViewById(R.id.browse_content_button);
 
         ImageButton mEditProfileButton = view.findViewById(R.id.edit_profile_button);
         Button mPlayButton = view.findViewById(R.id.play_button);
@@ -71,11 +73,32 @@ public class MainMenuFragment extends Fragment {
 
         mOpenDirectoryButton.setOnClickListener((v)-> openGameDirectory(v.getContext()));
 
+        mBrowseContentButton.setOnClickListener((v) -> openContentBrowser());
 
         mNewsButton.setOnLongClickListener((v)->{
             Tools.swapFragment(requireActivity(), GamepadMapperFragment.class, GamepadMapperFragment.TAG, null);
             return true;
         });
+    }
+
+    private void openContentBrowser() {
+        Instance instance = Instances.loadSelectedInstance();
+        if(instance == null) {
+            Toast.makeText(requireContext(), R.string.no_instance, Toast.LENGTH_LONG).show();
+            return;
+        }
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.browse_content_title)
+                .setItems(new String[]{
+                        getString(R.string.browse_content_mod),
+                        getString(R.string.browse_content_resourcepack)
+                }, (dialog, which) -> {
+                    Bundle bundle = new Bundle(1);
+                    bundle.putInt(SearchModFragment.ARG_CONTENT_TYPE,
+                            which == 0 ? SearchModFragment.MODE_MOD : SearchModFragment.MODE_RESOURCEPACK);
+                    Tools.swapFragment(requireActivity(), SearchModFragment.class, SearchModFragment.TAG, bundle);
+                })
+                .show();
     }
 
     private void openGameDirectory(Context context) {

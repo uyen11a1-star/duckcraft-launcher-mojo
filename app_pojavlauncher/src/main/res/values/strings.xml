@@ -505,4 +505,8 @@
     <string name="migration_notice">Looks like you have already used this application in the past. You can import old launcher installation data from miscellaneous settings.</string>
     <string name="preference_alsoft_opensl_title">Forcefully use OpenSL for audio</string>
     <string name="preference_alsoft_opensl_summary">Forcefully enables OpenSL backend in ALSoft instead of Oboe. Can fix audio capture issues on some devices. Disable if you see audio playback/capture issues</string>
+    <string name="browse_content_button">Browse Mods &amp; Resource Packs</string>
+    <string name="browse_content_title">What do you want to install?</string>
+    <string name="browse_content_mod">Mod</string>
+    <string name="browse_content_resourcepack">Resource Pack</string>
 </resources>

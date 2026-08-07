@@ -51,6 +51,13 @@ import java.io.OutputStream;
 public class SearchModFragment extends Fragment implements ModItemAdapter.SearchResultCallback {
 
     public static final String TAG = "SearchModFragment";
+
+    // Loại nội dung muốn tìm, truyền qua Bundle khi mở fragment này
+    public static final String ARG_CONTENT_TYPE = "content_type";
+    public static final int MODE_MODPACK = 0;
+    public static final int MODE_MOD = 1;
+    public static final int MODE_RESOURCEPACK = 2;
+
     private View mOverlay;
     private float mOverlayTopCache; // Padding cache reduce resource lookup
 
@@ -120,6 +127,13 @@ public class SearchModFragment extends Fragment implements ModItemAdapter.Search
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         modpackApi = new CommonApi(context.getString(R.string.curseforge_api_key));
+
+        Bundle args = getArguments();
+        if (args != null) {
+            int contentType = args.getInt(ARG_CONTENT_TYPE, MODE_MODPACK);
+            mSearchFilters.isModpack = contentType == MODE_MODPACK;
+            mSearchFilters.isResourcePack = contentType == MODE_RESOURCEPACK;
+        }
     }
 
     @Override
