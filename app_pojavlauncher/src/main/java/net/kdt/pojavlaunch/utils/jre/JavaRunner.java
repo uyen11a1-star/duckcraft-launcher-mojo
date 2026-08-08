@@ -38,6 +38,7 @@ public class JavaRunner {
         if (isJava8) {
             javaArgList.add("-Dawt.toolkit=net.java.openjdk.cacio.ctc.CTCToolkit");
             javaArgList.add("-Djava.awt.graphicsenv=net.java.openjdk.cacio.ctc.CTCGraphicsEnvironment");
+            javaArgList.add("-DPOJAV_NATIVEDIR=" + NATIVE_LIB_DIR);
             StringBuilder cacioClasspath = createCacioClasspath();
             javaArgList.add(cacioClasspath.toString());
             return false;
