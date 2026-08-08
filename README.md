@@ -1,6 +1,6 @@
 <H1 align="center">🦆 DuckCraft Launcher</H1>
 
-<img src="./app_pojavlauncher/src/main/assets/duckcraft.png" align="left" width="150" height="150" alt="DuckCraft Launcher logo">
+<img src="./app_pojavlauncher/src/main/assets/pojavlauncher.png" align="left" width="150" height="150" alt="DuckCraft Launcher logo">
 
 [![Android CI](https://github.com/uyen11a1-star/duckcraft-launcher-mojo/workflows/Android%20CI/badge.svg)](https://github.com/uyen11a1-star/duckcraft-launcher-mojo/actions)
 [![License](https://img.shields.io/badge/license-LGPLv3-blue.svg)](./LICENSE)
