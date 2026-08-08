@@ -239,11 +239,12 @@ public class GameRunner {
         }
 
         File versionSpecificNativesDir = new File(Tools.DIR_CACHE, "natives/"+versionId);
+        String libraryPath = Tools.NATIVE_LIB_DIR;
         if(versionSpecificNativesDir.exists()) {
-            String dirPath = versionSpecificNativesDir.getAbsolutePath();
-            javaArgList.add("-Djava.library.path="+dirPath+":"+Tools.NATIVE_LIB_DIR);
-            javaArgList.add("-Djna.boot.library.path="+dirPath);
+            libraryPath = versionSpecificNativesDir.getAbsolutePath()+":"+Tools.NATIVE_LIB_DIR;
+            javaArgList.add("-Djna.boot.library.path="+versionSpecificNativesDir.getAbsolutePath());
         }
+        javaArgList.add("-Djava.library.path="+libraryPath);
 
         File lwjglExtractDir = new File(Tools.DIR_CACHE, "lwjgl_native/"+versionId);
         FileUtils.ensureDirectory(lwjglExtractDir);
