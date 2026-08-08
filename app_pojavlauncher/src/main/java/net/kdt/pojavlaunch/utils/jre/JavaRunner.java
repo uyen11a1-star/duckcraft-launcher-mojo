@@ -76,9 +76,9 @@ public class JavaRunner {
         StringBuilder cacioClasspath = new StringBuilder();
         cacioClasspath.append("-Xbootclasspath/p");
         File cacioDir = new File(Tools.DIR_GAME_HOME, "caciocavallo");
-        Log.i("CacioDebug", "cacioDir path: " + cacioDir.getAbsolutePath() + " exists: " + cacioDir.exists());
+        Log.i("jrelog", "cacioDir path: " + cacioDir.getAbsolutePath() + " exists: " + cacioDir.exists());
         File[] cacioFiles = cacioDir.listFiles();
-        Log.i("CacioDebug", "cacioFiles: " + (cacioFiles == null ? "null" : java.util.Arrays.toString(cacioFiles)));
+        Log.i("jrelog", "cacioFiles: " + (cacioFiles == null ? "null" : java.util.Arrays.toString(cacioFiles)));
         if (cacioFiles != null) {
             for (File file : cacioFiles) {
                 if (file.getName().endsWith(".jar")) {
