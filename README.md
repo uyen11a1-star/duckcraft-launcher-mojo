@@ -1,6 +1,6 @@
 <H1 align="center">🦆 DuckCraft Launcher</H1>
 
-<img src="./app_pojavlauncher/src/main/assets/pojavlauncher.png" align="left" width="150" height="150" alt="DuckCraft Launcher logo">
+<img src="./app_pojavlauncher/src/main/assets/duckcraft.png" align="left" width="150" height="150" alt="DuckCraft Launcher logo">
 
 [![Android CI](https://github.com/uyen11a1-star/duckcraft-launcher-mojo/workflows/Android%20CI/badge.svg)](https://github.com/uyen11a1-star/duckcraft-launcher-mojo/actions)
 [![License](https://img.shields.io/badge/license-LGPLv3-blue.svg)](./LICENSE)
@@ -26,7 +26,7 @@ This is a personal fork maintained by **nguyenquochuy**, built on top of [MojoLa
 ## What's different from vanilla MojoLauncher
 - 🦆 Rebranded: new name, icon, and a **yellow-green** color theme.
 - 🖼️ Added the **MobileGlues** renderer — better performance on many Android devices, alongside the existing Holy GL4ES, Zink (Vulkan), Freedreno, and LTW options.
-- 📦 Added an in-app **Mod / Resource Pack browser & downloader** powered by Modrinth — search and install directly into your active instance without leaving the app.
+- 📦 Added an in-app **Mod / Resource Pack browser & downloader** powered by Modrinth and CurseForge — search and install directly into your active instance without leaving the app.
 
 ## Download
 - Latest builds: check the [Actions](https://github.com/uyen11a1-star/duckcraft-launcher-mojo/actions) tab → pick the latest ✅ run → download from the Artifacts section.
