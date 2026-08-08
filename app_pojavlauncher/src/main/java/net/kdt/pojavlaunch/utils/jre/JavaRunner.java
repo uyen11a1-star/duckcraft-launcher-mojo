@@ -38,7 +38,6 @@ public class JavaRunner {
         if (isJava8) {
             javaArgList.add("-Dawt.toolkit=net.java.openjdk.cacio.ctc.CTCToolkit");
             javaArgList.add("-Djava.awt.graphicsenv=net.java.openjdk.cacio.ctc.CTCGraphicsEnvironment");
-            javaArgList.add("-DPOJAV_NATIVEDIR=" + NATIVE_LIB_DIR);
             StringBuilder cacioClasspath = createCacioClasspath();
             javaArgList.add(cacioClasspath.toString());
             return false;
@@ -205,6 +204,7 @@ public class JavaRunner {
             Os.setenv("JAVA_HOME", jreHome.getAbsolutePath(), true);
             Os.setenv("HOME", Tools.DIR_GAME_HOME, true);
             Os.setenv("TMPDIR", Tools.DIR_CACHE.getAbsolutePath(), true);
+            Os.setenv("POJAV_NATIVEDIR", NATIVE_LIB_DIR, true);
         }catch (ErrnoException e) {
             throw new RuntimeException(e);
         }
