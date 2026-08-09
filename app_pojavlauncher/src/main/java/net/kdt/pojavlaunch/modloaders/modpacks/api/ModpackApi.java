@@ -20,43 +20,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.net.URL;
+import java.util.Arrays;
 import net.kdt.pojavlaunch.utils.FileUtils;
 
-/**
- *
- */
 public interface ModpackApi {
 
-    /**
-     * @param searchFilters Filters
-     * @param previousPageResult The result from the previous page
-     * @return the list of mod items from specified offset
-     */
     SearchResult searchMod(SearchFilters searchFilters, SearchResult previousPageResult);
 
-    /**
-     * @param searchFilters Filters
-     * @return A list of mod items
-     */
     default SearchResult searchMod(SearchFilters searchFilters) {
         return searchMod(searchFilters, null);
     }
 
-    /**
-     * Fetch the mod details
-     * @param item The moditem that was selected
-     * @return Detailed data about a mod(pack)
-     */
     ModDetail getModDetails(ModItem item);
 
-    /**
-     * Download and install the modpack
-     * @param modDetail The mod detail data
-     * @param selectedVersion The selected version
-     */
     default void handleModpackInstallation(Context context, ModDetail modDetail, int selectedVersion) {
-        // Doing this here since when starting installation, the progress does not start immediately
-        // which may lead to two concurrent installations (very bad)
         ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 0, R.string.global_waiting);
         PojavApplication.sExecutorService.execute(() -> {
             try {
@@ -69,35 +46,32 @@ public interface ModpackApi {
 
     ModLoader installLocalModpack(String modpackName, File modpackFile, String icon) throws IOException;
 
-    /**
-     * Install the mod(pack).
-     * May require the download of additional files.
-     * May requires launching the installation of a modloader
-     * @param modDetail The mod detail data
-     * @param selectedVersion The selected version
-     */
     ModLoader installModpack(ModDetail modDetail, int selectedVersion) throws IOException;
 
-    /**
-     * Tìm URL file tải cho 1 mod phụ thuộc (theo id), khớp đúng phiên bản Minecraft nếu có thể.
-     * Mặc định trả về null (API không hỗ trợ tra cứu phụ thuộc, VD: CurseForge chưa làm).
-     * ModrinthApi override hàm này để hỗ trợ thật.
-     */
     default String resolveDependencyFileUrl(String dependencyProjectId, String mcVersion) {
         return null;
     }
 
-    /**
-     * Tải trực tiếp 1 mod/resourcepack đơn lẻ vào thư mục instance đang chọn,
-     * kèm tự động tải các mod phụ thuộc bắt buộc (nếu API hỗ trợ tra cứu).
-     * Khác installModpack: không tạo instance mới, không giải nén gì cả.
-     */
     default void handleFileInstallation(Context context, ModDetail modDetail, int selectedVersion, File targetDir) {
         ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 0, R.string.global_waiting);
+
+        // === DEBUG: xem requiredDependencyIds có dữ liệu gì không ===
+        Tools.runOnUiThread(() -> {
+            String debugMsg;
+            if (modDetail.requiredDependencyIds == null) {
+                debugMsg = "DEBUG: requiredDependencyIds = null (mảng gốc null)";
+            } else if (modDetail.requiredDependencyIds[selectedVersion] == null) {
+                debugMsg = "DEBUG: requiredDependencyIds[" + selectedVersion + "] = null";
+            } else {
+                debugMsg = "DEBUG: deps found = " + modDetail.requiredDependencyIds[selectedVersion].length
+                        + " -> " + Arrays.toString(modDetail.requiredDependencyIds[selectedVersion]);
+            }
+            Toast.makeText(context, debugMsg, Toast.LENGTH_LONG).show();
+        });
+
         PojavApplication.sExecutorService.execute(() -> {
             try {
                 FileUtils.ensureDirectory(targetDir);
-
                 downloadToDirectory(modDetail.versionUrls[selectedVersion], targetDir);
 
                 int downloadedDependencyCount = 0;
@@ -106,6 +80,10 @@ public interface ModpackApi {
                     String mcVersion = modDetail.mcVersionNames[selectedVersion];
                     for (String dependencyId : modDetail.requiredDependencyIds[selectedVersion]) {
                         String dependencyUrl = resolveDependencyFileUrl(dependencyId, mcVersion);
+                        String finalDependencyId = dependencyId;
+                        Tools.runOnUiThread(() -> Toast.makeText(context,
+                                "DEBUG: dep " + finalDependencyId + " -> " + (dependencyUrl == null ? "URL null" : "OK"),
+                                Toast.LENGTH_LONG).show());
                         if (dependencyUrl != null) {
                             downloadToDirectory(dependencyUrl, targetDir);
                             downloadedDependencyCount++;
@@ -129,7 +107,6 @@ public interface ModpackApi {
         });
     }
 
-    /** Tải 1 file từ URL vào thư mục đích, giữ nguyên tên file gốc. */
     static void downloadToDirectory(String url, File targetDir) throws IOException {
         String fileName = url.substring(url.lastIndexOf('/') + 1);
         File targetFile = new File(targetDir, fileName);
