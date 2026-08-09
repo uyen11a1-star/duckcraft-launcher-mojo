@@ -24,6 +24,9 @@ public class ApiHandler {
     public final String baseUrl;
     public final Map<String, String> additionalHeaders;
 
+    // === DEBUG: lưu lỗi thật gần nhất để hiển thị ra ngoài ===
+    public static volatile String LAST_ERROR = "chưa gọi lần nào (BUILD_MARKER_V2)";
+
     public ApiHandler(String url) {
         baseUrl = url;
         additionalHeaders = null;
@@ -51,7 +54,6 @@ public class ApiHandler {
         return postFullUrl(additionalHeaders, baseUrl + "/" + endpoint, query, body, tClass);
     }
 
-    //Make a get request and return the response as a raw string;
     public static String getRaw(String url) {
         return getRaw(null, url);
     }
@@ -60,33 +62,34 @@ public class ApiHandler {
         return getRaw(headers, url, 3);
     }
 
-    /**
-     * Gọi GET với cơ chế thử lại (Modrinth API đôi khi trả 404 "ngẫu nhiên"
-     * do lỗi CDN/cache phía họ, thử lại thường sẽ qua được).
-     */
     public static String getRaw(Map<String, String> headers, String url, int maxAttempts) {
         Log.d("ApiHandler", url);
-        IOException lastError = null;
+        Exception lastError = null;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
                 HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
                 conn.setRequestProperty("User-Agent", "DuckCraftLauncher/1.0 (nguyenquochuy)");
                 addHeaders(conn, headers);
+                int code = conn.getResponseCode();
+                if (code < 200 || code >= 300) {
+                    LAST_ERROR = "HTTP " + code + " tại: " + url;
+                    lastError = new IOException("HTTP " + code);
+                    conn.disconnect();
+                    if (attempt < maxAttempts) { try { Thread.sleep(400L * attempt); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); break; } }
+                    continue;
+                }
                 InputStream inputStream = conn.getInputStream();
                 String data = Tools.read(inputStream);
                 Log.d(ApiHandler.class.toString(), data);
                 inputStream.close();
                 conn.disconnect();
+                LAST_ERROR = "OK (attempt " + attempt + ")";
                 return data;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 lastError = e;
+                LAST_ERROR = e.getClass().getSimpleName() + ": " + e.getMessage() + " tại: " + url;
                 if (attempt < maxAttempts) {
-                    try {
-                        Thread.sleep(400L * attempt);
-                    } catch (InterruptedException ignored) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
+                    try { Thread.sleep(400L * attempt); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); break; }
                 }
             }
         }

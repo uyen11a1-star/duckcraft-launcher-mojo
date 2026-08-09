@@ -82,7 +82,7 @@ public interface ModpackApi {
                         String dependencyUrl = resolveDependencyFileUrl(dependencyId, mcVersion);
                         String finalDependencyId = dependencyId;
                         Tools.runOnUiThread(() -> Toast.makeText(context,
-                                "DEBUG: dep " + finalDependencyId + " -> " + (dependencyUrl == null ? "URL null" : "OK"),
+                                "DEBUG: dep " + finalDependencyId + " -> " + (dependencyUrl == null ? ("URL null. Lỗi thật: " + ApiHandler.LAST_ERROR) : "OK"),
                                 Toast.LENGTH_LONG).show());
                         if (dependencyUrl != null) {
                             downloadToDirectory(dependencyUrl, targetDir);
