@@ -57,19 +57,40 @@ public class ApiHandler {
     }
 
     public static String getRaw(Map<String, String> headers, String url) {
+        return getRaw(headers, url, 3);
+    }
+
+    /**
+     * Gọi GET với cơ chế thử lại (Modrinth API đôi khi trả 404 "ngẫu nhiên"
+     * do lỗi CDN/cache phía họ, thử lại thường sẽ qua được).
+     */
+    public static String getRaw(Map<String, String> headers, String url, int maxAttempts) {
         Log.d("ApiHandler", url);
-        try {
-            HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-            addHeaders(conn, headers);
-            InputStream inputStream = conn.getInputStream();
-            String data = Tools.read(inputStream);
-            Log.d(ApiHandler.class.toString(), data);
-            inputStream.close();
-            conn.disconnect();
-            return data;
-        } catch (IOException e) {
-            e.printStackTrace();
+        IOException lastError = null;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+                conn.setRequestProperty("User-Agent", "DuckCraftLauncher/1.0 (nguyenquochuy)");
+                addHeaders(conn, headers);
+                InputStream inputStream = conn.getInputStream();
+                String data = Tools.read(inputStream);
+                Log.d(ApiHandler.class.toString(), data);
+                inputStream.close();
+                conn.disconnect();
+                return data;
+            } catch (IOException e) {
+                lastError = e;
+                if (attempt < maxAttempts) {
+                    try {
+                        Thread.sleep(400L * attempt);
+                    } catch (InterruptedException ignored) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
         }
+        if (lastError != null) lastError.printStackTrace();
         return null;
     }
 
@@ -83,6 +104,7 @@ public class ApiHandler {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("User-Agent", "DuckCraftLauncher/1.0 (nguyenquochuy)");
             addHeaders(conn, headers);
             conn.setDoOutput(true);
 
