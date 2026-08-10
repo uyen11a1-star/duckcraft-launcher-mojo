@@ -26,6 +26,7 @@ public class ApiHandler {
 
     // === DEBUG: lưu lỗi thật gần nhất để hiển thị ra ngoài ===
     public static volatile String LAST_ERROR = "chưa gọi lần nào (BUILD_MARKER_V2)";
+    public static volatile String LAST_RAW = null;
 
     public ApiHandler(String url) {
         baseUrl = url;
@@ -84,6 +85,7 @@ public class ApiHandler {
                 inputStream.close();
                 conn.disconnect();
                 LAST_ERROR = "OK (attempt " + attempt + ")";
+                LAST_RAW = data;
                 return data;
             } catch (Exception e) {
                 lastError = e;

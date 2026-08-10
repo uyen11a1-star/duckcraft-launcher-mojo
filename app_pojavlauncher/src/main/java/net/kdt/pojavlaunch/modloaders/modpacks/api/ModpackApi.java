@@ -78,12 +78,20 @@ public interface ModpackApi {
                 if (modDetail.requiredDependencyIds != null
                         && modDetail.requiredDependencyIds[selectedVersion] != null) {
                     String mcVersion = modDetail.mcVersionNames[selectedVersion];
+                    java.io.File debugFile = new java.io.File(targetDir.getParentFile(), "duckcraft_debug.txt");
                     for (String dependencyId : modDetail.requiredDependencyIds[selectedVersion]) {
+                        StringBuilder debugLog = new StringBuilder();
+                        debugLog.append("=== dep: ").append(dependencyId).append(" mcVersion=").append(mcVersion).append(" ===\n");
                         String dependencyUrl = resolveDependencyFileUrl(dependencyId, mcVersion);
-                        String finalDependencyId = dependencyId;
-                        Tools.runOnUiThread(() -> Toast.makeText(context,
-                                "DEBUG: dep " + finalDependencyId + " -> " + (dependencyUrl == null ? ("URL null. Lỗi thật: " + ApiHandler.LAST_ERROR) : "OK"),
-                                Toast.LENGTH_LONG).show());
+                        debugLog.append("resolveDependencyFileUrl result: ").append(dependencyUrl).append("\n");
+                        debugLog.append("ApiHandler.LAST_ERROR: ").append(ApiHandler.LAST_ERROR).append("\n");
+                        debugLog.append("ApiHandler.LAST_RAW (first 800 chars): ").append(
+                                ApiHandler.LAST_RAW == null ? "null" :
+                                ApiHandler.LAST_RAW.substring(0, Math.min(800, ApiHandler.LAST_RAW.length()))
+                        ).append("\n\n");
+                        try (java.io.FileWriter fw = new java.io.FileWriter(debugFile, true)) {
+                            fw.write(debugLog.toString());
+                        } catch (IOException ignored) {}
                         if (dependencyUrl != null) {
                             downloadToDirectory(dependencyUrl, targetDir);
                             downloadedDependencyCount++;
