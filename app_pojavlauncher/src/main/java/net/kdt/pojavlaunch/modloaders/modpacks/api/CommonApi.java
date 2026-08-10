@@ -125,6 +125,13 @@ public class CommonApi implements ModpackApi {
         return getModpackApi(modDetail.apiSource).installModpack(modDetail, selectedVersion);
     }
 
+    @Override
+    public String resolveDependencyFileUrl(String dependencyProjectId, String mcVersion) {
+        // Hiện chỉ Modrinth hỗ trợ tra cứu dependency thật (requiredDependencyIds chỉ được
+        // ModrinthApi.getModDetails() điền, nên hàm này chỉ được gọi cho mod nguồn Modrinth)
+        return mModrinthApi.resolveDependencyFileUrl(dependencyProjectId, mcVersion);
+    }
+
     public ModLoader installLocalModpack(String modpackName, File modpackFile, String icon) throws IOException {
         short s = checkModpack(modpackFile);
         switch (s) {
