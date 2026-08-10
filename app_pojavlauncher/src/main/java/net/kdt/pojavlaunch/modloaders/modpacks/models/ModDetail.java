@@ -20,6 +20,9 @@ public class ModDetail extends ModItem {
      * Có thể null nếu API không cung cấp (VD: CurseForge). */
     public String[][] requiredDependencyIds;
 
+    /* Modloader của từng phiên bản (VD: "fabric", "forge", "neoforge", "quilt") */
+    public String[] versionLoaders;
+
     public ModDetail(ModItem item, String[] versionNames, String[] mcVersionNames, String[]
             versionUrls, String[] hashes) {
         super(item.apiSource, item.isModpack, item.id, item.title, item.description, item.

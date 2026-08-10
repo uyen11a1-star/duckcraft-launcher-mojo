@@ -140,26 +140,49 @@ public class ModrinthApi implements ModpackApi{
      * Trả về null nếu không tìm được.
      */
     @Override
-    public String resolveDependencyFileUrl(String dependencyProjectId, String mcVersion) {
+    public String resolveDependencyFileUrl(String dependencyProjectId, String mcVersion, String modLoader) {
         String endpoint = String.format("project/%s/version", dependencyProjectId);
         JsonArray response = mApiHandler.get(endpoint, JsonArray.class);
-        ApiHandler.LAST_ERROR = "response = " + (response == null ? "null" : ("size=" + response.size()));
         if (response == null || response.size() == 0) return null;
 
-        // Ưu tiên bản khớp đúng phiên bản Minecraft
+        // Uu tien ban khop dung CA phien ban Minecraft LAN modloader
         for (int i = 0; i < response.size(); i++) {
             JsonObject version = response.get(i).getAsJsonObject();
             JsonArray gameVersions = version.getAsJsonArray("game_versions");
+            JsonArray loadersArray = version.getAsJsonArray("loaders");
             if (gameVersions == null) continue;
+
+            boolean loaderMatches = (modLoader == null || loadersArray == null);
+            if (!loaderMatches && loadersArray != null) {
+                for (int k = 0; k < loadersArray.size(); k++) {
+                    if (modLoader.equalsIgnoreCase(loadersArray.get(k).getAsString())) {
+                        loaderMatches = true;
+                        break;
+                    }
+                }
+            }
+            if (!loaderMatches) continue;
+
             for (int j = 0; j < gameVersions.size(); j++) {
                 if (mcVersion != null && mcVersion.equals(gameVersions.get(j).getAsString())) {
                     return version.getAsJsonArray("files").get(0).getAsJsonObject().get("url").getAsString();
                 }
             }
         }
-        // Không khớp version nào, lấy bản mới nhất làm dự phòng
-        JsonObject firstVersion = response.get(0).getAsJsonObject();
-        return firstVersion.getAsJsonArray("files").get(0).getAsJsonObject().get("url").getAsString();
+        // Khong tim duoc ban khop ca 2 dieu kien: thu lai chi loc theo modloader (bo qua version)
+        if (modLoader != null) {
+            for (int i = 0; i < response.size(); i++) {
+                JsonObject version = response.get(i).getAsJsonObject();
+                JsonArray loadersArray = version.getAsJsonArray("loaders");
+                if (loadersArray == null) continue;
+                for (int k = 0; k < loadersArray.size(); k++) {
+                    if (modLoader.equalsIgnoreCase(loadersArray.get(k).getAsString())) {
+                        return version.getAsJsonArray("files").get(0).getAsJsonObject().get("url").getAsString();
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @Override
