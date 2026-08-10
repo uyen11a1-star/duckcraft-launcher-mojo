@@ -141,7 +141,9 @@ public class ModrinthApi implements ModpackApi{
      */
     @Override
     public String resolveDependencyFileUrl(String dependencyProjectId, String mcVersion) {
-        JsonArray response = mApiHandler.get(String.format("project/%s/version", dependencyProjectId), JsonArray.class);
+        String endpoint = String.format("project/%s/version", dependencyProjectId);
+        JsonArray response = mApiHandler.get(endpoint, JsonArray.class);
+        ApiHandler.LAST_ERROR = "response = " + (response == null ? "null" : ("size=" + response.size()));
         if (response == null || response.size() == 0) return null;
 
         // Ưu tiên bản khớp đúng phiên bản Minecraft
