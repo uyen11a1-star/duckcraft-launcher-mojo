@@ -105,6 +105,16 @@ public interface ModpackApi {
                         && modDetail.requiredDependencyIds[selectedVersion] != null) {
                     String mcVersion = modDetail.mcVersionNames[selectedVersion];
                     String modLoader = (modDetail.versionLoaders != null) ? modDetail.versionLoaders[selectedVersion] : null;
+                    java.io.File debugFile2 = new File(targetDir.getParentFile(), "duckcraft_debug.txt");
+                    try (java.io.FileWriter fw2 = new java.io.FileWriter(debugFile2, true)) {
+                        fw2.write("=== ModLoader debug ===\n");
+                        fw2.write("modDetail.versionLoaders == null: " + (modDetail.versionLoaders == null) + "\n");
+                        if (modDetail.versionLoaders != null) {
+                            fw2.write("versionLoaders[" + selectedVersion + "] = " + modDetail.versionLoaders[selectedVersion] + "\n");
+                            fw2.write("Full versionLoaders array: " + java.util.Arrays.toString(modDetail.versionLoaders) + "\n");
+                        }
+                        fw2.write("mcVersion = " + mcVersion + "\n");
+                    } catch (IOException ignored) {}
                     for (String dependencyId : modDetail.requiredDependencyIds[selectedVersion]) {
                         String dependencyUrl = resolveDependencyFileUrl(dependencyId, mcVersion, modLoader);
                         if (dependencyUrl != null) {
