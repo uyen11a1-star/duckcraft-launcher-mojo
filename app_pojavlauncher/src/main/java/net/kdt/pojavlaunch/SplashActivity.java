@@ -7,6 +7,8 @@ import android.os.Looper;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import git.artdeell.mojo.R;
+
 public class SplashActivity extends AppCompatActivity {
 
     private static final long SPLASH_DURATION_MS = 1500;
