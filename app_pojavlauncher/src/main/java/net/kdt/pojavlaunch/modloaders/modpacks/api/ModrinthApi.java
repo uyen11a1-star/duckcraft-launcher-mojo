@@ -96,6 +96,7 @@ public class ModrinthApi implements ModpackApi{
         String[] urls = new String[response.size()];
         String[] hashes = new String[response.size()];
         String[][] requiredDependencyIds = new String[response.size()][];
+        String[] loaders = new String[response.size()];
 
         for (int i=0; i<response.size(); ++i) {
             JsonObject version = response.get(i).getAsJsonObject();
@@ -113,10 +114,16 @@ public class ModrinthApi implements ModpackApi{
 
             // Đọc danh sách mod phụ thuộc bắt buộc (required dependency)
             requiredDependencyIds[i] = parseRequiredDependencies(version);
+
+            // Lấy modloader chính của phiên bản này (fabric/forge/neoforge/quilt)
+            JsonArray loadersArray = version.getAsJsonArray("loaders");
+            loaders[i] = (loadersArray != null && loadersArray.size() > 0)
+                    ? loadersArray.get(0).getAsString() : null;
         }
 
         ModDetail modDetail = new ModDetail(item, names, mcNames, urls, hashes);
         modDetail.requiredDependencyIds = requiredDependencyIds;
+        modDetail.versionLoaders = loaders;
         return modDetail;
     }
 
