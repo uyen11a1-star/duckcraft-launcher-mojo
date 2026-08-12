@@ -429,7 +429,7 @@
     <string name="auth_select_elyby">Tài khoản Ely.by </string>
     <string name="auth_select_local">Tài khoản nội bộ</string>
     <string name="instance_dir_missing">Thư mục instance bị thiếu</string>
-    <string name="browse_content_button">Duyệt Mod & Resource Pack</string>
+    <string name="browse_content_button">Duyệt Mod &amp; Resource Pack</string>
     <string name="browse_content_title">Bạn muốn cài gì?</string>
     <string name="browse_content_mod">Mod</string>
     <string name="browse_content_resourcepack">Resource Pack</string>
