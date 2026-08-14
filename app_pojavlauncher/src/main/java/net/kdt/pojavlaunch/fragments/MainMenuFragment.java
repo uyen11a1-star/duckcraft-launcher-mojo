@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
+import android.widget.ImageView;
+import androidx.preference.PreferenceManager;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
@@ -75,10 +77,31 @@ public class MainMenuFragment extends Fragment {
 
         mBrowseContentButton.setOnClickListener((v) -> openContentBrowser());
 
+        applySeasonalBackground(view);
+
         mNewsButton.setOnLongClickListener((v)->{
             Tools.swapFragment(requireActivity(), GamepadMapperFragment.class, GamepadMapperFragment.TAG, null);
             return true;
         });
+    }
+
+    private void applySeasonalBackground(android.view.View rootView) {
+        ImageView bg = rootView.findViewById(R.id.seasonal_background);
+        String variant = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                .getString("appIconVariant", "default");
+        int resId;
+        switch (variant) {
+            case "christmas": resId = R.drawable.bg_seasonal_christmas; break;
+            case "tet": resId = R.drawable.bg_seasonal_tet; break;
+            case "trungthu": resId = R.drawable.bg_seasonal_trungthu; break;
+            default: resId = 0; break;
+        }
+        if (resId != 0) {
+            bg.setImageResource(resId);
+            bg.setVisibility(View.VISIBLE);
+        } else {
+            bg.setVisibility(View.GONE);
+        }
     }
 
     private void openContentBrowser() {
