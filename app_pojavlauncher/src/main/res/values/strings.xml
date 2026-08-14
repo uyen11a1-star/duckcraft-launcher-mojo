@@ -513,4 +513,5 @@
     <string name="hint_search_resourcepack">Search resource packs...</string>
     <string name="file_install_success">Installed successfully</string>
     <string name="file_install_dependencies_suffix">dependencies</string>
+    <string name="preference_app_icon_title">Icon ứng dụng theo mùa</string>
 </resources>

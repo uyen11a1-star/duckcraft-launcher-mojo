@@ -11,6 +11,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
+import android.content.ComponentName;
+import android.content.Context;
 
 import git.artdeell.mojo.R;
 
@@ -53,6 +55,41 @@ public class LauncherPreferenceMiscellaneousFragment extends LauncherPreferenceF
             return true;
         });
         setupMicrophoneRequestPreference();
+        setupIconVariantPreference();
+    }
+
+    private void setupIconVariantPreference() {
+        Preference iconPreference = requirePreference("appIconVariant");
+        iconPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            applyIconVariant(preference.getContext(), (String) newValue);
+            return true;
+        });
+    }
+
+    private static final String[] ICON_ALIASES = {
+            "net.kdt.pojavlaunch.IconChristmas",
+            "net.kdt.pojavlaunch.IconTet",
+            "net.kdt.pojavlaunch.IconTrungThu"
+    };
+
+    private void applyIconVariant(Context context, String variant) {
+        PackageManager pm = context.getPackageManager();
+        String packageName = context.getPackageName();
+
+        // Mặc định: bật SplashActivity, tắt hết alias
+        boolean useDefault = "default".equals(variant);
+        pm.setComponentEnabledSetting(
+                new ComponentName(packageName, "net.kdt.pojavlaunch.SplashActivity"),
+                useDefault ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP);
+
+        for (String alias : ICON_ALIASES) {
+            boolean shouldEnable = alias.toLowerCase().endsWith(variant.toLowerCase());
+            pm.setComponentEnabledSetting(
+                    new ComponentName(packageName, alias),
+                    shouldEnable ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
+        }
     }
 
     private void updateVisibility(){

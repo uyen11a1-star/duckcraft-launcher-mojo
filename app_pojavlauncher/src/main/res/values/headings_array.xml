@@ -52,4 +52,17 @@
         <item>bmclapi</item>
     </string-array>
 
+
+    <string-array name="icon_variant_names">
+        <item>Mặc định</item>
+        <item>🎄 Giáng sinh</item>
+        <item>🧧 Tết Nguyên Đán</item>
+        <item>🏮 Tết Trung Thu</item>
+    </string-array>
+    <string-array name="icon_variant_values">
+        <item>default</item>
+        <item>christmas</item>
+        <item>tet</item>
+        <item>trungthu</item>
+    </string-array>
 </resources>
