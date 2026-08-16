@@ -31,7 +31,8 @@ public class JREUtils {
                 try {
                     if (logcatPb == null) {
                         // No filtering by tag anymore as that relied on incorrect log levels set in log.h
-                        logcatPb = new ProcessBuilder().command("logcat", /* "-G", "1mb", */ "-v", "brief", "-s", "jrelog", "LIBGL", "NativeInput").redirectErrorStream(true);
+                        // Keep warnings and errors from the renderer/JRE, while dropping noisy INFO/DEBUG output.
+                        logcatPb = new ProcessBuilder().command("logcat", /* "-G", "1mb", */ "-v", "brief", "-s", "jrelog:W", "LIBGL:W", "NativeInput:W").redirectErrorStream(true);
                     }
 
                     Log.i("jrelog-logcat","Clearing logcat");
