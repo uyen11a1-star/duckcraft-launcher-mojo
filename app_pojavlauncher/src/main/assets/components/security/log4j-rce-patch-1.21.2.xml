@@ -20,7 +20,7 @@
         </Listener>
     </Appenders>
     <Loggers>
-        <Root level="info">
+        <Root level="warn">
             <filters>
                 <MarkerFilter marker="NETWORK_PACKETS" onMatch="DENY" onMismatch="NEUTRAL" />
             </filters>
