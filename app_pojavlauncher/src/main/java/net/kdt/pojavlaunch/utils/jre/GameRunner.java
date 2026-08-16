@@ -35,43 +35,36 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 import git.artdeell.mojo.R;
 
 public class GameRunner {
-    /**
-     * Optimization mods based on Sodium can mitigate the render distance issue. Check if Sodium
-     * or its derivative is currently installed to skip the render distance check.
-     * @param gameDir current game directory
-     * @return whether sodium or a sodium-based mod is installed
-     */
-    private static boolean hasSodium(File gameDir) {
-        File modsDir = new File(gameDir, "mods");
-        File[] mods = modsDir.listFiles(file -> file.isFile() && file.getName().endsWith(".jar"));
-        if(mods == null) return false;
-        for(File file : mods) {
-            String name = file.getName();
-            if(name.contains("sodium") ||
-                    name.contains("embeddium") ||
-                    name.contains("rubidium")) return true;
+    private static final class ModPresence {
+        final boolean sodium;
+        final boolean angelica;
+
+        ModPresence(boolean sodium, boolean angelica) {
+            this.sodium = sodium;
+            this.angelica = angelica;
         }
-        return false;
     }
 
-    /**
-     * Check if Angelica is currently installed to allow usage of LTW
-     * @param gameDir current game directory
-     * @return whether Angelica is installed
-     */
-    private static boolean hasAngelica(File gameDir) {
+    /** Scan the mods directory once for renderer compatibility checks. */
+    private static ModPresence scanModPresence(File gameDir) {
         File modsDir = new File(gameDir, "mods");
         File[] mods = modsDir.listFiles(file -> file.isFile() && file.getName().endsWith(".jar"));
-        if(mods == null) return false;
-        for(File file : mods) {
-            String name = file.getName();
-            if(name.contains("angelica")) return true;
+        if (mods == null) return new ModPresence(false, false);
+
+        boolean sodium = false;
+        boolean angelica = false;
+        for (File file : mods) {
+            String name = file.getName().toLowerCase(Locale.ROOT);
+            sodium |= name.contains("sodium") || name.contains("embeddium") || name.contains("rubidium");
+            angelica |= name.contains("angelica");
+            if (sodium && angelica) break;
         }
-        return false;
+        return new ModPresence(sodium, angelica);
     }
 
     /**
@@ -95,9 +88,9 @@ public class GameRunner {
                 DateUtils.dateBefore(DateUtils.getOriginalReleaseDate(version), 2025, 2, 25);
     }
 
-    private static boolean checkRenderDistance(JVersionList.Version version, File gamedir) throws ParseException {
+    private static boolean checkRenderDistance(JVersionList.Version version, boolean hasSodium) throws ParseException {
         if(!affectedByRenderDistanceIssue(version)) return false;
-        if(hasSodium(gamedir)) return false;
+        if(hasSodium) return false;
         try {
             MCOptionUtils.load();
         }catch (Exception e) {
@@ -168,28 +161,41 @@ public class GameRunner {
         File gamedir = instance.getGameDirectory();
         JVersionList.Version versionInfo = Tools.getVersionInfo(versionId);
 
-        // Switch renderer to GL4ES when running a compat context version on LTW
-        if(isCompatContext(versionInfo) && !hasAngelica(gamedir) && rendererName.equals("opengles3_ltw")) {
+        boolean compatContext = isCompatContext(versionInfo);
+        boolean gl4esCompatible = isGl4esCompatible(versionInfo);
+        boolean isGl4es = rendererName.equals("opengles2");
+        boolean scannedMods = (compatContext && rendererName.equals("opengles3_ltw")) ||
+                (!compatContext && isGl4es);
+        ModPresence modPresence = scannedMods ? scanModPresence(gamedir) : new ModPresence(false, false);
+
+        // Switch renderer to GL4ES when running a compat context version on LTW.
+        if(compatContext && !modPresence.angelica && rendererName.equals("opengles3_ltw")) {
             instance.renderer = rendererName = "opengles2";
             instance.write();
         }
 
-        boolean isGl4es = rendererName.equals("opengles2");
-        boolean ltwSupported = RendererCompatUtil.getCompatibleRenderers(activity).rendererIds.contains("opengles3_ltw");
-        // Block Sodium from running with GL4ES on 1.17+
-        if(!isCompatContext(versionInfo) && isGl4es && hasSodium(gamedir)) {
+        boolean ltwSupported = false;
+        // Resolve compatible renderers only when a fallback is actually needed.
+        if(!compatContext && isGl4es && modPresence.sodium) {
+            ltwSupported = RendererCompatUtil.getCompatibleRenderers(activity).rendererIds.contains("opengles3_ltw");
             rendererName = switchLtw(ltwSupported, instance, activity, R.string.compat_sodium_not_supported);
         }
 
-        // Switch renderer to LTW when running 1.21.5
-        if(!isGl4esCompatible(versionInfo) && isGl4es) {
+        // Switch renderer to LTW when running 1.21.5.
+        if(!gl4esCompatible && isGl4es && rendererName.equals("opengles2")) {
+            if(!ltwSupported) {
+                ltwSupported = RendererCompatUtil.getCompatibleRenderers(activity).rendererIds.contains("opengles3_ltw");
+            }
             rendererName = switchLtw(ltwSupported, instance, activity, R.string.compat_version_not_supported);
         }
         RendererCompatUtil.releaseRenderersCache();
 
         boolean isLtw = rendererName.equals("opengles3_ltw");
+        if(isLtw && !scannedMods) {
+            modPresence = scanModPresence(gamedir);
+        }
 
-        if(isLtw && checkRenderDistance(versionInfo, gamedir)) {
+        if(isLtw && checkRenderDistance(versionInfo, modPresence.sodium)) {
             if(showDialog(activity, R.string.ltw_render_distance_warning_msg)) return;
             // If the code goes here, it means that the user clicked "OK". Fix the render distance.
             try {

@@ -11,7 +11,8 @@ import git.artdeell.mojo.R;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private static final long SPLASH_DURATION_MS = 1500;
+    // Keep a brief transition without imposing a noticeable startup delay.
+    private static final long SPLASH_DURATION_MS = 200;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
