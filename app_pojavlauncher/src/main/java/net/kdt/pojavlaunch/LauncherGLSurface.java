@@ -71,6 +71,12 @@ public class LauncherGLSurface extends View implements GrabListener, GamepadEnab
 
     private final SurfaceProvider mSurfaceProvider = LauncherPreferences.PREF_USE_ALTERNATE_SURFACE ? new SurfaceViewSurfaceProvider() : new TextureViewSurfaceProvider();
     private boolean mRefreshOnly = true;
+    /* Last render spec sent to the native bridge. Avoids recreating the game framebuffer
+       when Android reports a resume/layout pass without an actual size change. */
+    private int mConfiguredWidth;
+    private int mConfiguredHeight;
+    private int mConfiguredRefreshRate;
+    private boolean mHasConfiguredDisplay;
     /* Surface ready listener, used by the activity to launch minecraft */
     SurfaceReadyListener mSurfaceReadyListener = null;
     final Object mSurfaceReadyListenerLock = new Object();
@@ -107,6 +113,14 @@ public class LauncherGLSurface extends View implements GrabListener, GamepadEnab
      *                 when the cursor is not grabbed
      */
     public void start(boolean isAlreadyRunning, View touchpad) {
+        // A service reconnect can deliver this callback more than once. Reusing the
+        // existing surface prevents duplicate SurfaceView/TextureView instances and
+        // the resulting extra composition work.
+        if (mSurface != null) {
+            mTouchpad = touchpad;
+            mInGUIProcessor.setAbstractTouchpad(touchpad);
+            return;
+        }
         mTouchpad = touchpad;
         if (Tools.isAndroid8OrHigher()) setUpPointerCapture();
         mInGUIProcessor.setAbstractTouchpad(touchpad);
@@ -316,13 +330,24 @@ public class LauncherGLSurface extends View implements GrabListener, GamepadEnab
             Log.e("MGLSurface", String.format("Impossible resolution : %dx%d", newWidth, newHeight));
             return;
         }
-        windowWidth = newWidth;
-        windowHeight = newHeight;
         if(mSurface == null){
             Log.w("MGLSurface", "Attempt to refresh size on null surface");
             return;
         }
-        JREUtils.configureRenderspecDisplay(windowWidth, windowHeight, (int) mSurface.getDisplay().getRefreshRate());
+        int refreshRate = Math.round(mSurface.getDisplay().getRefreshRate());
+        if (!immediate && mHasConfiguredDisplay
+                && mConfiguredWidth == newWidth
+                && mConfiguredHeight == newHeight
+                && mConfiguredRefreshRate == refreshRate) {
+            return;
+        }
+        windowWidth = newWidth;
+        windowHeight = newHeight;
+        mConfiguredWidth = newWidth;
+        mConfiguredHeight = newHeight;
+        mConfiguredRefreshRate = refreshRate;
+        mHasConfiguredDisplay = true;
+        JREUtils.configureRenderspecDisplay(windowWidth, windowHeight, refreshRate);
         mSurfaceProvider.updateSize();
     }
 
