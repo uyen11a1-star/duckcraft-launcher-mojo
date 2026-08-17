@@ -63,10 +63,9 @@ public class RendererCompatUtil {
          return getCompatibleRenderers(context).rendererIds.contains(rendererName);
     }
 
-    /** Releases the cache of compatible renderers. */
+    /** Releases the cache of compatible renderers without forcing a stop-the-world GC pause. */
     public static void releaseRenderersCache() {
         sCompatibleRenderers = null;
-        System.gc();
     }
 
     public static class RenderersList {

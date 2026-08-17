@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import net.kdt.pojavlaunch.Architecture;
 import net.kdt.pojavlaunch.JVersionList;
 import net.kdt.pojavlaunch.LauncherActivity;
+import net.kdt.pojavlaunch.Logger;
 import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.authenticator.accounts.Account;
 import net.kdt.pojavlaunch.instances.Instance;
@@ -191,6 +192,7 @@ public class GameRunner {
         RendererCompatUtil.releaseRenderersCache();
 
         boolean isLtw = rendererName.equals("opengles3_ltw");
+        Logger.appendToLog("Info: Effective renderer: " + rendererName);
         if(isLtw && !scannedMods) {
             modPresence = scanModPresence(gamedir);
         }

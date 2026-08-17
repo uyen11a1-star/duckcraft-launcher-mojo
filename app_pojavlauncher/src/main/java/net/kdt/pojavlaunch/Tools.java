@@ -78,6 +78,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import git.artdeell.mojo.BuildConfig;
@@ -565,6 +566,30 @@ public final class Tools {
         Logger.appendToLog("Info: RAM allocated: " + LauncherPreferences.PREF_RAM_ALLOCATION + " Mb");
         Logger.appendToLog("Info: Graphics device: "+info.vendor+ " "+info.renderer+" (OpenGL ES "+info.glesMajorVersion+")");
         Logger.appendToLog("Info: Selected renderer: " + renderer);
+    }
+
+    /**
+     * Write a compact mod inventory before Minecraft starts. This is intentionally limited to
+     * filenames so it remains cheap and does not open every jar just to produce diagnostics.
+     */
+    public static void printModInventory(File gameDir) {
+        File modsDir = new File(gameDir, "mods");
+        File[] modFiles = modsDir.listFiles(file -> file.isFile() &&
+                file.getName().toLowerCase(Locale.ROOT).endsWith(".jar"));
+        if (modFiles == null) {
+            Logger.appendToLog("Info: Mod directory unavailable: " + modsDir.getAbsolutePath());
+            return;
+        }
+
+        Arrays.sort(modFiles, (left, right) -> left.getName().compareToIgnoreCase(right.getName()));
+        StringBuilder inventory = new StringBuilder("Info: Mods (").append(modFiles.length).append("): ");
+        int maxNames = 160;
+        for (int i = 0; i < modFiles.length && i < maxNames; i++) {
+            if (i > 0) inventory.append(", ");
+            inventory.append(modFiles[i].getName());
+        }
+        if (modFiles.length > maxNames) inventory.append(", ...");
+        Logger.appendToLog(inventory.toString());
     }
 
     public static JVersionList.Version getVersionInfo(String versionName) {

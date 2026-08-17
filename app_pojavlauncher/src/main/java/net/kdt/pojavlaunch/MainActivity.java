@@ -396,6 +396,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         }
         Logger.appendToLog("--------- Starting game with Launcher Debug!");
         Tools.printLauncherInfo(versionId, instance.getLaunchArgs(), renderer, this);
+        Tools.printModInventory(instance.getGameDirectory());
         JREUtils.redirectAndPrintJRELog();
         GameRunner.launchGame(this, account, instance, versionId, classpath, renderer);
         //Note that we actually stall in the above function, even if the game crashes. But let's be safe.
