@@ -17,7 +17,10 @@
         </RollingRandomAccessFile>
     </Appenders>
     <Loggers>
-        <Root level="warn">
+        <!-- Keep INFO enabled: Fabric and other mod loaders report the loaded mod list
+             and many startup diagnostics at INFO level. The filters below still block
+             network packet spam. -->
+        <Root level="info">
             <filters>
                 <MarkerFilter marker="NETWORK_PACKETS" onMatch="DENY" onMismatch="NEUTRAL" />
             </filters>
