@@ -16,6 +16,8 @@ import net.kdt.pojavlaunch.Tools;
 public class TextureViewSurfaceProvider implements SurfaceProvider {
     private TextureView mTextureView;
     private SurfaceCallback mCallback;
+    private int mLastBufferWidth;
+    private int mLastBufferHeight;
 
     @Override
     public View create(Context context, SurfaceCallback callback) {
@@ -30,7 +32,9 @@ public class TextureViewSurfaceProvider implements SurfaceProvider {
     @Override
     public void updateSize() {
         SurfaceTexture surfaceTexture = mTextureView.getSurfaceTexture();
-        if(surfaceTexture != null) {
+        if(surfaceTexture != null && (mLastBufferWidth != windowWidth || mLastBufferHeight != windowHeight)) {
+            mLastBufferWidth = windowWidth;
+            mLastBufferHeight = windowHeight;
             surfaceTexture.setDefaultBufferSize(windowWidth, windowHeight);
             Tools.runOnUiThread(()->mCallback.onSurfaceResized());
         }
@@ -40,20 +44,29 @@ public class TextureViewSurfaceProvider implements SurfaceProvider {
 
         @Override
         public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surfaceTexture, int i, int i1) {
-            if(windowWidth != 0 && windowHeight != 0)
+            if(windowWidth != 0 && windowHeight != 0) {
+                mLastBufferWidth = windowWidth;
+                mLastBufferHeight = windowHeight;
                 surfaceTexture.setDefaultBufferSize(windowWidth, windowHeight);
+            }
             mCallback.onSurfaceAvailable(new Surface(surfaceTexture));
         }
 
         @Override
         public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surfaceTexture) {
+            mLastBufferWidth = 0;
+            mLastBufferHeight = 0;
             mCallback.onSurfaceDestroyed();
             return true;
         }
 
         @Override
         public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surfaceTexture, int i, int i1) {
-            mCallback.onSurfaceResized();
+            if (i != mLastBufferWidth || i1 != mLastBufferHeight) {
+                mLastBufferWidth = i;
+                mLastBufferHeight = i1;
+                mCallback.onSurfaceResized();
+            }
         }
 
         @Override

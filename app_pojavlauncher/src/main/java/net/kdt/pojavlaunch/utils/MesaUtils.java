@@ -53,13 +53,12 @@ public class MesaUtils {
     }
 
     /**
-     * Destroy zink plugin instance created during environment init if exists
+     * Destroy zink plugin instance created during environment init if exists.
+     * Do not force a stop-the-world GC here: this runs on the game launch path and
+     * the VM can reclaim the plugin normally when pressure requires it.
      */
     public static void destroyZink(){
-        if(zink != null) {
-            zink = null;
-            System.gc();
-        }
+        zink = null;
     }
 
     /**

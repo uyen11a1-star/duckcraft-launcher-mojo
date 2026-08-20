@@ -566,6 +566,8 @@ public final class Tools {
         Logger.appendToLog("Info: RAM allocated: " + LauncherPreferences.PREF_RAM_ALLOCATION + " Mb");
         Logger.appendToLog("Info: Graphics device: "+info.vendor+ " "+info.renderer+" (OpenGL ES "+info.glesMajorVersion+")");
         Logger.appendToLog("Info: Selected renderer: " + renderer);
+        Logger.appendToLog("Info: Surface mode: " + (LauncherPreferences.PREF_USE_ALTERNATE_SURFACE ? "SurfaceView" : "TextureView"));
+        Logger.appendToLog("Info: Resolution scale: " + LauncherPreferences.PREF_SCALE_FACTOR);
     }
 
     /**
