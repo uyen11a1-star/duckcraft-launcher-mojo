@@ -34,8 +34,10 @@ public class InGameEventProcessor extends TouchEventProcessor {
                 float[] motionVector = mTracker.getMotionVector();
                 float deltaX = (float) (motionVector[0] * mSensitivity);
                 float deltaY = (float) (motionVector[1] * mSensitivity);
-                mLeftClickGesture.setMotion(deltaX, deltaY);
-                mRightClickGesture.setMotion(deltaX, deltaY);
+                if(!LauncherPreferences.PREF_DISABLE_GESTURES) {
+                    mLeftClickGesture.setMotion(deltaX, deltaY);
+                    mRightClickGesture.setMotion(deltaX, deltaY);
+                }
                 applyMoveVector(deltaX, deltaY);
                 if(LauncherPreferences.PREF_DISABLE_GESTURES) break;
                 checkGestures();
