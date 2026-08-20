@@ -274,7 +274,13 @@ public final class PerformanceProfileInstaller {
             if (!containsIgnoreCase(version.getAsJsonArray("loaders"), target.loader)) continue;
             matches.add(version);
         }
-        matches.sort(Comparator.comparing(v -> getString(v, "date_published"), Comparator.nullsFirst(String::compareTo)).reversed());
+        matches.sort((left, right) -> {
+            String leftDate = getString(left, "date_published");
+            String rightDate = getString(right, "date_published");
+            if (leftDate == null) return rightDate == null ? 0 : 1;
+            if (rightDate == null) return -1;
+            return rightDate.compareTo(leftDate);
+        });
         return matches.isEmpty() ? null : matches.get(0);
     }
 
