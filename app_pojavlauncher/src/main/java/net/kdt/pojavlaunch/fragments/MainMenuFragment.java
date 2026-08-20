@@ -28,7 +28,9 @@ import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.contracts.OpenDocumentWithExtension;
 import net.kdt.pojavlaunch.extra.ExtraConstants;
 import net.kdt.pojavlaunch.extra.ExtraCore;
+import net.kdt.pojavlaunch.PojavApplication;
 import net.kdt.pojavlaunch.instances.Instance;
+import net.kdt.pojavlaunch.performance.PerformanceProfileInstaller;
 import net.kdt.pojavlaunch.instances.Instances;
 import net.kdt.pojavlaunch.progresskeeper.ProgressKeeper;
 import net.kdt.pojavlaunch.utils.FileUtils;
@@ -58,6 +60,7 @@ public class MainMenuFragment extends Fragment {
         Button mShareLogsButton = view.findViewById(R.id.share_logs_button);
         Button mOpenDirectoryButton = view.findViewById(R.id.open_files_button);
         Button mBrowseContentButton = view.findViewById(R.id.browse_content_button);
+        Button mPerformanceProfileButton = view.findViewById(R.id.performance_profile_button);
 
         ImageButton mEditProfileButton = view.findViewById(R.id.edit_profile_button);
         Button mPlayButton = view.findViewById(R.id.play_button);
@@ -76,6 +79,7 @@ public class MainMenuFragment extends Fragment {
         mOpenDirectoryButton.setOnClickListener((v)-> openGameDirectory(v.getContext()));
 
         mBrowseContentButton.setOnClickListener((v) -> openContentBrowser());
+        mPerformanceProfileButton.setOnClickListener((v) -> confirmPerformanceProfile(mPerformanceProfileButton));
 
         applySeasonalBackground(view);
 
@@ -102,6 +106,48 @@ public class MainMenuFragment extends Fragment {
         } else {
             bg.setVisibility(View.GONE);
         }
+    }
+
+    private void confirmPerformanceProfile(Button button) {
+        Instance instance = Instances.loadSelectedInstance();
+        if (instance == null) {
+            Toast.makeText(requireContext(), R.string.no_instance, Toast.LENGTH_LONG).show();
+            return;
+        }
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.performance_profile_title)
+                .setMessage(R.string.performance_profile_description)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.performance_profile_install, (dialog, which) -> installPerformanceProfile(instance, button))
+                .show();
+    }
+
+    private void installPerformanceProfile(Instance instance, Button button) {
+        button.setEnabled(false);
+        Toast.makeText(requireContext(), R.string.performance_profile_starting, Toast.LENGTH_SHORT).show();
+        PojavApplication.sExecutorService.execute(() -> PerformanceProfileInstaller.install(instance,
+                new PerformanceProfileInstaller.Callback() {
+                    @Override
+                    public void onProgress(String message) {
+                        // Progress is deliberately not posted for every file to avoid UI churn.
+                    }
+
+                    @Override
+                    public void onSuccess(String summary) {
+                        Tools.runOnUiThread(() -> {
+                            button.setEnabled(true);
+                            Toast.makeText(requireContext(), summary, Toast.LENGTH_LONG).show();
+                        });
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        Tools.runOnUiThread(() -> {
+                            button.setEnabled(true);
+                            Tools.showErrorRemote("Performance profile", error);
+                        });
+                    }
+                }));
     }
 
     private void openContentBrowser() {
