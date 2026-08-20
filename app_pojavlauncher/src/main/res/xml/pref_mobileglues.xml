@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <net.kdt.pojavlaunch.prefs.BackButtonPreference />
+
+    <PreferenceCategory android:title="@string/mobileglues_settings_title">
+        <Preference
+            android:key="mobileglues_apply_recommended"
+            android:title="@string/mobileglues_recommended_title"
+            android:summary="@string/mobileglues_recommended_description"
+            android:icon="@drawable/ic_px_speed" />
+
+        <Preference
+            android:key="mobileglues_config_path"
+            android:title="@string/mobileglues_config_path_title"
+            android:selectable="false" />
+
+        <Preference
+            android:key="mobileglues_reset"
+            android:title="@string/mobileglues_reset_title"
+            android:summary="@string/mobileglues_reset_description"
+            android:icon="@drawable/ic_sharp_settings_24" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/mcl_setting_category_renderer">
+        <androidx.preference.ListPreference
+            android:key="mobileglues_angle"
+            android:title="@string/mobileglues_angle_title"
+            android:summary="@string/mobileglues_angle_summary"
+            android:entries="@array/mobileglues_angle_entries"
+            android:entryValues="@array/mobileglues_angle_values"
+            android:defaultValue="2"
+            android:icon="@drawable/ic_px_image_renderer"
+            app:useSimpleSummaryProvider="true" />
+
+        <androidx.preference.ListPreference
+            android:key="mobileglues_no_error"
+            android:title="@string/mobileglues_no_error_title"
+            android:summary="@string/mobileglues_no_error_summary"
+            android:entries="@array/mobileglues_no_error_entries"
+            android:entryValues="@array/mobileglues_no_error_values"
+            android:defaultValue="0"
+            app:useSimpleSummaryProvider="true" />
+
+        <androidx.preference.SwitchPreferenceCompat
+            android:key="mobileglues_timer_query"
+            android:title="@string/mobileglues_timer_query_title"
+            android:summary="@string/mobileglues_timer_query_summary"
+            android:defaultValue="true" />
+
+        <androidx.preference.SwitchPreferenceCompat
+            android:key="mobileglues_compute"
+            android:title="@string/mobileglues_compute_title"
+            android:summary="@string/mobileglues_compute_summary"
+            android:defaultValue="false" />
+
+        <androidx.preference.SwitchPreferenceCompat
+            android:key="mobileglues_dsa"
+            android:title="@string/mobileglues_dsa_title"
+            android:summary="@string/mobileglues_dsa_summary"
+            android:defaultValue="false" />
+
+        <androidx.preference.ListPreference
+            android:key="mobileglues_glsl_cache"
+            android:title="@string/mobileglues_glsl_cache_title"
+            android:summary="@string/mobileglues_glsl_cache_summary"
+            android:entries="@array/mobileglues_cache_entries"
+            android:entryValues="@array/mobileglues_cache_values"
+            android:defaultValue="32"
+            app:useSimpleSummaryProvider="true" />
+
+        <androidx.preference.ListPreference
+            android:key="mobileglues_fsr"
+            android:title="@string/mobileglues_fsr_title"
+            android:summary="@string/mobileglues_fsr_summary"
+            android:entries="@array/mobileglues_fsr_entries"
+            android:entryValues="@array/mobileglues_fsr_values"
+            android:defaultValue="0"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+</PreferenceScreen>

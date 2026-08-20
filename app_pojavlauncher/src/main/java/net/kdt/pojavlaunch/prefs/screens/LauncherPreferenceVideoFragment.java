@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.preference.ListPreference;
+import androidx.preference.Preference;
 import androidx.preference.SwitchPreference;
 import androidx.preference.SwitchPreferenceCompat;
 
@@ -89,5 +90,9 @@ public class LauncherPreferenceVideoFragment extends LauncherPreferenceFragment 
     private void computeVisibility(){
         requirePreference("force_vsync", SwitchPreferenceCompat.class)
                 .setVisible(LauncherPreferences.PREF_USE_ALTERNATE_SURFACE);
+
+        Preference mobileGluesSettings = requirePreference("mobileglues_settings");
+        mobileGluesSettings.setVisible(RendererCompatUtil.getCompatibleRenderers(requireContext())
+                .rendererIds.contains("mobileglues"));
     }
 }

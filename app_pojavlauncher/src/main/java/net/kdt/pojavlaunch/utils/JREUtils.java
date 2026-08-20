@@ -134,9 +134,17 @@ public class JREUtils {
 		if (!modRuntimeDir.exists()) {
     		modRuntimeDir.mkdirs();
 		}
-		envMap.put("MOD_ANDROID_RUNTIME", modRuntimeDir.getAbsolutePath());
+		        envMap.put("MOD_ANDROID_RUNTIME", modRuntimeDir.getAbsolutePath());
+
+        // MobileGlues uses /sdcard/MG by default, which is not writable under
+        // scoped storage on Android 11+. Point it at the launcher's writable
+        // external directory so its config/cache work on Android 12+.
+        if ("mobileglues".equals(renderer)) {
+            MobileGluesConfig.configureEnvironment(context, envMap);
+        }
 
         setupAngleEnv(context, envMap);
+
         setupFfmpegEnv(context, envMap);
         // Init mesa renderers
         MesaUtils.initEnvironment(context, renderer, envMap);

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="mobileglues_angle_entries">
+        <item>@string/mobileglues_angle_disable_if_possible</item>
+        <item>@string/mobileglues_angle_enable_if_possible</item>
+        <item>@string/mobileglues_angle_force_disable</item>
+        <item>@string/mobileglues_angle_force_enable</item>
+    </string-array>
+    <string-array name="mobileglues_angle_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="mobileglues_no_error_entries">
+        <item>@string/mobileglues_no_error_normal</item>
+        <item>@string/mobileglues_no_error_partial</item>
+        <item>@string/mobileglues_no_error_full</item>
+    </string-array>
+    <string-array name="mobileglues_no_error_values">
+        <item>0</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="mobileglues_cache_entries">
+        <item>@string/mobileglues_cache_off</item>
+        <item>@string/mobileglues_cache_16</item>
+        <item>@string/mobileglues_cache_32</item>
+        <item>@string/mobileglues_cache_64</item>
+    </string-array>
+    <string-array name="mobileglues_cache_values">
+        <item>0</item>
+        <item>16</item>
+        <item>32</item>
+        <item>64</item>
+    </string-array>
+
+    <string-array name="mobileglues_fsr_entries">
+        <item>@string/mobileglues_fsr_off</item>
+        <item>@string/mobileglues_fsr_ultra_quality</item>
+        <item>@string/mobileglues_fsr_quality</item>
+        <item>@string/mobileglues_fsr_balanced</item>
+        <item>@string/mobileglues_fsr_performance</item>
+    </string-array>
+    <string-array name="mobileglues_fsr_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+</resources>
