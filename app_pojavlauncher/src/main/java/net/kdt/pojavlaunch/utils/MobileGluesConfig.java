@@ -11,23 +11,19 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-/**
- * Launcher-side access to the MobileGlues native configuration.
- *
- * MobileGlues reads MG_DIR_PATH/config.json before the renderer is initialized.
- * Keeping this file in the launcher's app-specific external directory avoids
- * scoped-storage failures on Android 11+ while the environment variable makes
- * the native library use the same directory.
- */
+/** Launcher-side access to the MobileGlues native config.json. */
 public final class MobileGluesConfig {
     private static final String TAG = "MobileGluesConfig";
     private static final String DIRECTORY_NAME = "MG";
     private static final String CONFIG_NAME = "config.json";
     private static final String TEMP_CONFIG_NAME = "config.json.tmp";
+    public static final String DEFAULT_VALUE = "__default__";
+
+    private static final String DEFAULT_MULTIDRAW_ORDER =
+            "native,multiindirect,multibasevertex,multiarrays,indirect,basevertex,unroll,compute";
 
     private MobileGluesConfig() {
     }
@@ -46,7 +42,7 @@ public final class MobileGluesConfig {
         return getConfigFile(context).isFile();
     }
 
-    /** Add MG_DIR_PATH to the process environment before libmobileglues.so is loaded. */
+    /** Add MG_DIR_PATH before libmobileglues.so is loaded. */
     public static void configureEnvironment(Context context, Map<String, String> envMap) {
         File directory = getDirectory(context);
         if (!directory.exists() && !directory.mkdirs() && !directory.isDirectory()) {
@@ -56,27 +52,21 @@ public final class MobileGluesConfig {
         envMap.put("MG_DIR_PATH", directory.getAbsolutePath());
     }
 
-    /** Apply conservative defaults for Adreno/GLES translation without forcing ANGLE or Compute. */
+    /** Conservative Adreno/GLES defaults; experimental paths remain opt-in. */
     public static boolean applyRecommendedProfile(Context context) {
         JSONObject config = readConfig(context);
         try {
-            // ANGLE is left off: forcing it can be slower or incompatible on Adreno 610.
             config.put("enableANGLE", 0);
-            // Keep shader/program error handling normal for diagnostics and compatibility.
             config.put("enableNoError", 0);
-            // Timer queries are low risk and used by performance HUD/mods.
             config.put("enableExtTimerQuery", 1);
-            // Compute and DSA are intentionally opt-in because unsupported paths can crash or regress FPS.
             config.put("enableExtComputeShader", 0);
             config.put("enableExtDirectStateAccess", 0);
-            // Keep a bounded shader cache to reduce shader stutter without unbounded storage growth.
             config.put("maxGlslCacheSize", 32);
             config.put("angleDepthClearFixMode", 0);
             config.put("customGLVersion", 0);
-            // FSR is disabled by default; users can enable it when lowering resolution deliberately.
             config.put("fsr1Setting", 0);
-            // Let MobileGlues choose the first supported MultiDraw backend at runtime.
-            removeLegacyMultiDrawKeys(config);
+            config.put("hideMGEnvLevel", 0);
+            removeMultidrawKeys(config);
             return writeConfig(context, config);
         } catch (Exception e) {
             Log.e(TAG, "Could not apply recommended profile", e);
@@ -95,6 +85,21 @@ public final class MobileGluesConfig {
         }
     }
 
+    public static boolean updateString(Context context, String key, String value) {
+        JSONObject config = readConfig(context);
+        try {
+            if (value == null || value.length() == 0 || DEFAULT_VALUE.equals(value)) {
+                config.remove(key);
+            } else {
+                config.put(key, value);
+            }
+            return writeConfig(context, config);
+        } catch (Exception e) {
+            Log.e(TAG, "Could not update " + key, e);
+            return false;
+        }
+    }
+
     public static JSONObject readConfig(Context context) {
         File file = getConfigFile(context);
         if (!file.isFile()) return new JSONObject();
@@ -105,19 +110,18 @@ public final class MobileGluesConfig {
             while ((line = reader.readLine()) != null) content.append(line);
             return new JSONObject(content.toString());
         } catch (Exception e) {
-            // Do not overwrite a hand-edited/corrupt file silently; start from a clean object
-            // and leave the original available for diagnostics.
             Log.w(TAG, "Could not read config, using defaults: " + file, e);
             return new JSONObject();
         }
     }
 
     public static int getInt(Context context, String key, int fallback) {
-        try {
-            return readConfig(context).optInt(key, fallback);
-        } catch (Exception e) {
-            return fallback;
-        }
+        return readConfig(context).optInt(key, fallback);
+    }
+
+    public static String getString(Context context, String key, String fallback) {
+        String value = readConfig(context).optString(key, fallback);
+        return value == null || value.length() == 0 ? fallback : value;
     }
 
     public static boolean writeConfig(Context context, JSONObject config) {
@@ -141,7 +145,6 @@ public final class MobileGluesConfig {
         }
 
         if (temporary.renameTo(target)) return true;
-        // Some Android filesystems do not replace an existing file during rename.
         if (target.exists() && !target.delete()) {
             temporary.delete();
             Log.e(TAG, "Could not replace MobileGlues config: " + target);
@@ -155,11 +158,58 @@ public final class MobileGluesConfig {
         return true;
     }
 
+    /** Return the exact native default order, or null when the key should be removed. */
+    public static String multidrawGlobalPreset(String preset) {
+        if (DEFAULT_VALUE.equals(preset)) return null;
+        if ("multiindirect".equals(preset)) {
+            return "multiindirect,native,multibasevertex,multiarrays,indirect,basevertex,unroll,compute";
+        }
+        if ("multiarrays".equals(preset)) {
+            return "multiarrays,native,multiindirect,multibasevertex,indirect,basevertex,unroll,compute";
+        }
+        if ("indirect".equals(preset)) {
+            return "indirect,native,multiindirect,multibasevertex,multiarrays,basevertex,unroll,compute";
+        }
+        if ("unroll".equals(preset)) {
+            return "unroll,native,multiindirect,multibasevertex,multiarrays,indirect,basevertex,compute";
+        }
+        if ("compute".equals(preset)) {
+            return "compute,native,multiindirect,multibasevertex,multiarrays,indirect,basevertex,unroll";
+        }
+        return DEFAULT_MULTIDRAW_ORDER;
+    }
+
+    /** Return a valid concrete order for one native MultiDraw entry point. */
+    public static String multidrawEntryPreset(String entry, String preset) {
+        if (DEFAULT_VALUE.equals(preset)) return null;
+        boolean batchFirst = "batch".equals(preset);
+        boolean simpleFirst = "simple".equals(preset);
+        if ("arrays".equals(entry)) {
+            return batchFirst ? "multiindirect,multiarrays,unroll" : simpleFirst ? "unroll,multiarrays,multiindirect" : "multiarrays,multiindirect,unroll";
+        }
+        if ("elements".equals(entry)) {
+            return batchFirst ? "multiindirect,multiarrays,indirect,multibasevertex,unroll" : simpleFirst ? "unroll,indirect,multiarrays,multiindirect,multibasevertex" : "multiarrays,multiindirect,indirect,multibasevertex,unroll";
+        }
+        if ("elementsBaseVertex".equals(entry)) {
+            return batchFirst ? "multiindirect,multibasevertex,indirect,basevertex,compute,unroll" : simpleFirst ? "unroll,basevertex,indirect,multibasevertex,multiindirect,compute" : "multibasevertex,multiindirect,indirect,basevertex,compute,unroll";
+        }
+        if ("arraysIndirect".equals(entry) || "elementsIndirect".equals(entry)) {
+            return batchFirst ? "multiindirect,indirect" : "indirect,multiindirect";
+        }
+        return null;
+    }
+
     private static File getConfigFile(Context context) {
         return new File(getDirectory(context), CONFIG_NAME);
     }
 
-    private static void removeLegacyMultiDrawKeys(JSONObject config) {
+    private static void removeMultidrawKeys(JSONObject config) {
+        config.remove("multidrawOrder");
+        config.remove("multidrawOrderArrays");
+        config.remove("multidrawOrderElements");
+        config.remove("multidrawOrderElementsBaseVertex");
+        config.remove("multidrawOrderArraysIndirect");
+        config.remove("multidrawOrderElementsIndirect");
         config.remove("multidrawMode");
         config.remove("multidrawDisableBackends");
         config.remove("multidrawModeArrays");

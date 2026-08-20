@@ -30,7 +30,7 @@
             android:summary="@string/mobileglues_angle_summary"
             android:entries="@array/mobileglues_angle_entries"
             android:entryValues="@array/mobileglues_angle_values"
-            android:defaultValue="2"
+            android:defaultValue="0"
             android:icon="@drawable/ic_px_image_renderer"
             app:useSimpleSummaryProvider="true" />
 
@@ -42,6 +42,30 @@
             android:entryValues="@array/mobileglues_no_error_values"
             android:defaultValue="0"
             app:useSimpleSummaryProvider="true" />
+
+        <androidx.preference.ListPreference
+            android:key="mobileglues_depth_fix"
+            android:title="@string/mobileglues_depth_fix_title"
+            android:summary="@string/mobileglues_depth_fix_summary"
+            android:entries="@array/mobileglues_depth_fix_entries"
+            android:entryValues="@array/mobileglues_depth_fix_values"
+            android:defaultValue="0"
+            app:useSimpleSummaryProvider="true" />
+
+        <androidx.preference.ListPreference
+            android:key="mobileglues_gl_version"
+            android:title="@string/mobileglues_gl_version_title"
+            android:summary="@string/mobileglues_gl_version_summary"
+            android:entries="@array/mobileglues_gl_version_entries"
+            android:entryValues="@array/mobileglues_gl_version_values"
+            android:defaultValue="0"
+            app:useSimpleSummaryProvider="true" />
+
+        <androidx.preference.SwitchPreferenceCompat
+            android:key="mobileglues_hide_env"
+            android:title="@string/mobileglues_hide_env_title"
+            android:summary="@string/mobileglues_hide_env_summary"
+            android:defaultValue="false" />
 
         <androidx.preference.SwitchPreferenceCompat
             android:key="mobileglues_timer_query"
@@ -77,6 +101,62 @@
             android:entries="@array/mobileglues_fsr_entries"
             android:entryValues="@array/mobileglues_fsr_values"
             android:defaultValue="0"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/mobileglues_multidraw_category">
+        <androidx.preference.ListPreference
+            android:key="mobileglues_multidraw_global"
+            android:title="@string/mobileglues_multidraw_global_title"
+            android:summary="@string/mobileglues_multidraw_global_summary"
+            android:entries="@array/mobileglues_multidraw_global_entries"
+            android:entryValues="@array/mobileglues_multidraw_global_values"
+            android:defaultValue="__default__"
+            app:useSimpleSummaryProvider="true" />
+
+        <androidx.preference.ListPreference
+            android:key="mobileglues_multidraw_arrays"
+            android:title="@string/mobileglues_multidraw_arrays_title"
+            android:summary="@string/mobileglues_multidraw_entry_summary"
+            android:entries="@array/mobileglues_multidraw_entry_entries"
+            android:entryValues="@array/mobileglues_multidraw_entry_values"
+            android:defaultValue="__default__"
+            app:useSimpleSummaryProvider="true" />
+
+        <androidx.preference.ListPreference
+            android:key="mobileglues_multidraw_elements"
+            android:title="@string/mobileglues_multidraw_elements_title"
+            android:summary="@string/mobileglues_multidraw_entry_summary"
+            android:entries="@array/mobileglues_multidraw_entry_entries"
+            android:entryValues="@array/mobileglues_multidraw_entry_values"
+            android:defaultValue="__default__"
+            app:useSimpleSummaryProvider="true" />
+
+        <androidx.preference.ListPreference
+            android:key="mobileglues_multidraw_basevertex"
+            android:title="@string/mobileglues_multidraw_basevertex_title"
+            android:summary="@string/mobileglues_multidraw_entry_summary"
+            android:entries="@array/mobileglues_multidraw_entry_entries"
+            android:entryValues="@array/mobileglues_multidraw_entry_values"
+            android:defaultValue="__default__"
+            app:useSimpleSummaryProvider="true" />
+
+        <androidx.preference.ListPreference
+            android:key="mobileglues_multidraw_arrays_indirect"
+            android:title="@string/mobileglues_multidraw_arrays_indirect_title"
+            android:summary="@string/mobileglues_multidraw_entry_summary"
+            android:entries="@array/mobileglues_multidraw_entry_entries"
+            android:entryValues="@array/mobileglues_multidraw_entry_values"
+            android:defaultValue="__default__"
+            app:useSimpleSummaryProvider="true" />
+
+        <androidx.preference.ListPreference
+            android:key="mobileglues_multidraw_elements_indirect"
+            android:title="@string/mobileglues_multidraw_elements_indirect_title"
+            android:summary="@string/mobileglues_multidraw_entry_summary"
+            android:entries="@array/mobileglues_multidraw_entry_entries"
+            android:entryValues="@array/mobileglues_multidraw_entry_values"
+            android:defaultValue="__default__"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 </PreferenceScreen>

@@ -14,12 +14,14 @@
     </string-array>
 
     <string-array name="mobileglues_no_error_entries">
+        <item>@string/mobileglues_no_error_auto</item>
         <item>@string/mobileglues_no_error_normal</item>
         <item>@string/mobileglues_no_error_partial</item>
         <item>@string/mobileglues_no_error_full</item>
     </string-array>
     <string-array name="mobileglues_no_error_values">
         <item>0</item>
+        <item>1</item>
         <item>2</item>
         <item>3</item>
     </string-array>
@@ -50,5 +52,69 @@
         <item>2</item>
         <item>3</item>
         <item>4</item>
+    </string-array>
+
+    <string-array name="mobileglues_depth_fix_entries">
+        <item>@string/mobileglues_depth_fix_off</item>
+        <item>@string/mobileglues_depth_fix_mode1</item>
+        <item>@string/mobileglues_depth_fix_mode2</item>
+    </string-array>
+    <string-array name="mobileglues_depth_fix_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string-array name="mobileglues_gl_version_entries">
+        <item>@string/mobileglues_gl_default</item>
+        <item>OpenGL 3.2</item>
+        <item>OpenGL 3.3</item>
+        <item>OpenGL 4.0</item>
+        <item>OpenGL 4.1</item>
+        <item>OpenGL 4.2</item>
+        <item>OpenGL 4.3</item>
+        <item>OpenGL 4.4</item>
+        <item>OpenGL 4.5</item>
+        <item>OpenGL 4.6</item>
+    </string-array>
+    <string-array name="mobileglues_gl_version_values">
+        <item>0</item>
+        <item>32</item>
+        <item>33</item>
+        <item>40</item>
+        <item>41</item>
+        <item>42</item>
+        <item>43</item>
+        <item>44</item>
+        <item>45</item>
+        <item>46</item>
+    </string-array>
+
+    <string-array name="mobileglues_multidraw_global_entries">
+        <item>@string/mobileglues_multidraw_auto</item>
+        <item>@string/mobileglues_multidraw_batch</item>
+        <item>@string/mobileglues_multidraw_multiarrays</item>
+        <item>@string/mobileglues_multidraw_indirect</item>
+        <item>@string/mobileglues_multidraw_unroll</item>
+        <item>@string/mobileglues_multidraw_compute</item>
+    </string-array>
+    <string-array name="mobileglues_multidraw_global_values">
+        <item>__default__</item>
+        <item>multiindirect</item>
+        <item>multiarrays</item>
+        <item>indirect</item>
+        <item>unroll</item>
+        <item>compute</item>
+    </string-array>
+
+    <string-array name="mobileglues_multidraw_entry_entries">
+        <item>@string/mobileglues_multidraw_auto</item>
+        <item>@string/mobileglues_multidraw_batch</item>
+        <item>@string/mobileglues_multidraw_simple</item>
+    </string-array>
+    <string-array name="mobileglues_multidraw_entry_values">
+        <item>__default__</item>
+        <item>batch</item>
+        <item>simple</item>
     </string-array>
 </resources>
