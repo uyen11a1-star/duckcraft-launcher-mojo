@@ -52,6 +52,7 @@ public final class MobileGluesConfig {
         if (!directory.exists() && !directory.mkdirs() && !directory.isDirectory()) {
             Log.w(TAG, "Could not create MobileGlues directory: " + directory);
         }
+        if (!isConfigPresent(context)) applyRecommendedProfile(context);
         envMap.put("MG_DIR_PATH", directory.getAbsolutePath());
     }
 
