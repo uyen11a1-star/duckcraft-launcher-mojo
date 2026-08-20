@@ -101,7 +101,10 @@ public class JREUtils {
     }
     public static void setEnviroimentForGame(Context context, String renderer) throws Throwable {
         Map<String, String> envMap = new ArrayMap<>();
-        envMap.put("LIBGL_MIPMAP", "3");
+        // Keep mipmaps enabled so distant textures use lower-resolution mip levels.
+        // The previous value (3) disabled mipmap creation and sampling entirely,
+        // forcing full-detail texture sampling at every distance in GL4ES.
+        envMap.put("LIBGL_MIPMAP", "2");
 
         // Prevent OptiFine (and other error-reporting stuff in Minecraft) from balooning the log
         envMap.put("LIBGL_NOERROR", "1");
