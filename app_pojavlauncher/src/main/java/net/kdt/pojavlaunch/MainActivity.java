@@ -19,6 +19,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -69,6 +70,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import git.artdeell.dnbootstrap.glfw.AndroidClipboardProvider;
 import git.artdeell.dnbootstrap.glfw.GLFW;
@@ -100,6 +102,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     public ArrayAdapter<String> ingameControlsEditorArrayAdapter;
     public AdapterView.OnItemClickListener ingameControlsEditorListener;
     private GameService.LocalBinder mServiceBinder;
+    private final AtomicBoolean mLaunchScheduled = new AtomicBoolean(false);
 
     private QuickSettingSideDialog mQuickSettingSideDialog;
 
@@ -250,12 +253,22 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             drawerLayout.closeDrawers();
 
             launcherGLView.setSurfaceReadyListener(() -> {
-                try {
-                    Tools.runOnUiThread(() -> { if(PREF_VIRTUAL_MOUSE_START) cursor.setVisibility(View.VISIBLE); });
-                    runCraft(version, classpath);
-                }catch (Throwable e){
-                    Tools.showErrorRemote(e);
-                }
+                // TextureView callbacks arrive on the UI thread. Starting the renderer, reading
+                // version metadata, scanning the classpath and loading the embedded JVM here
+                // blocks frame dispatch and makes the black startup surface visibly stutter.
+                if (!mLaunchScheduled.compareAndSet(false, true)) return;
+                Tools.runOnUiThread(() -> { if(PREF_VIRTUAL_MOUSE_START) cursor.setVisibility(View.VISIBLE); });
+                Log.i("StartupTrace", "Surface ready; moving game launch preparation off the UI thread");
+                PojavApplication.sExecutorService.execute(() -> {
+                    long start = SystemClock.uptimeMillis();
+                    try {
+                        runCraft(version, classpath);
+                        Log.i("StartupTrace", "Game launch pipeline returned after "
+                                + (SystemClock.uptimeMillis() - start) + " ms");
+                    } catch (Throwable e){
+                        Tools.showErrorRemote(e);
+                    }
+                });
             });
         } catch (Throwable e) {
             Tools.showError(this, e, true);
