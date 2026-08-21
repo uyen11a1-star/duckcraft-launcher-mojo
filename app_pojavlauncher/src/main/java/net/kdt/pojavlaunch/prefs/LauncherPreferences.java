@@ -99,9 +99,11 @@ public class LauncherPreferences {
         // users who enabled it explicitly keep their saved value.
         PREF_SUSTAINED_PERFORMANCE = DEFAULT_PREF.getBoolean("sustainedPerformance", false);
         PREF_VIRTUAL_MOUSE_START = DEFAULT_PREF.getBoolean("mouse_start", false);
-        // SurfaceView may reduce Android composition overhead on powerful devices.
-        // Keep any explicit user preference unchanged.
-        PREF_USE_ALTERNATE_SURFACE = DEFAULT_PREF.getBoolean("alternate_surface", isDevicePowerful);
+        // SurfaceView uses a separate composition layer and avoids the extra GPU composition
+        // required by TextureView. Prefer it on modern, memory-capable devices unless the user
+        // has explicitly selected a surface mode. TextureView remains available as a fallback
+        // for devices with white-screen/rotation quirks.
+        PREF_USE_ALTERNATE_SURFACE = DEFAULT_PREF.getBoolean("alternate_surface", shouldPreferSurfaceView(ctx));
         PREF_JAVA_SANDBOX = DEFAULT_PREF.getBoolean("java_sandbox", true);
         PREF_SCALE_FACTOR = DEFAULT_PREF.getInt("resolutionRatio", findBestResolution(ctx, isDevicePowerful))/100f;
         PREF_ENABLE_GYRO = DEFAULT_PREF.getBoolean("enableGyro", false);
@@ -188,6 +190,10 @@ public class LauncherPreferences {
         // The value must match the seekbar values
         int increment = context.getResources().getInteger(R.integer.resolution_seekbar_increment);
         return (int) (Math.ceil(ratio / increment) * increment);
+    }
+
+    private static boolean shouldPreferSurfaceView(Context context) {
+        return SDK_INT >= Build.VERSION_CODES.Q && Tools.getTotalDeviceMemory(context) >= 3072;
     }
 
     /// Check if the device is considered powerful.

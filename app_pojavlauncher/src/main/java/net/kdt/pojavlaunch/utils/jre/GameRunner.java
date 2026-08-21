@@ -260,7 +260,8 @@ public class GameRunner {
 
         addAuthlibInjectorArgs(javaArgList, account);
 
-        javaArgList.addAll(getMoJsonJvmArgs(versionId));
+        // Reuse the already merged version metadata instead of parsing the version JSON again.
+        javaArgList.addAll(getMoJsonJvmArgs(versionInfo));
 
         javaArgList.addAll(JREUtils.parseJavaArguments(instance.getLaunchArgs()));
 
@@ -327,8 +328,7 @@ public class GameRunner {
         javaArgList.add("-javaagent:"+Tools.DIR_DATA+"/authlib-injector/authlib-injector.jar="+injectorUrl);
     }
 
-    private static List<String> getMoJsonJvmArgs(String versionName) {
-        JVersionList.Version versionInfo = Tools.getVersionInfo(versionName, true);
+    private static List<String> getMoJsonJvmArgs(JVersionList.Version versionInfo) {
         // Parse Forge 1.17+ additional JVM Arguments
         if (versionInfo.inheritsFrom == null || versionInfo.arguments == null || versionInfo.arguments.jvm == null) {
             return Collections.emptyList();

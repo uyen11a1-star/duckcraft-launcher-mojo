@@ -30,6 +30,7 @@ import net.kdt.pojavlaunch.customcontrols.mouse.InGUIEventProcessor;
 import net.kdt.pojavlaunch.customcontrols.mouse.InGameEventProcessor;
 import net.kdt.pojavlaunch.customcontrols.mouse.TouchEventProcessor;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
+import net.kdt.pojavlaunch.tasks.AsyncAssetManager;
 import net.kdt.pojavlaunch.render.SurfaceProvider;
 import net.kdt.pojavlaunch.render.SurfaceViewSurfaceProvider;
 import net.kdt.pojavlaunch.render.TextureViewSurfaceProvider;
@@ -42,6 +43,8 @@ import fr.spse.gamepad_remapper.RemapperView;
 import git.artdeell.dnbootstrap.glfw.GLFW;
 import git.artdeell.dnbootstrap.glfw.GamepadEnableHandler;
 import git.artdeell.dnbootstrap.glfw.GrabListener;
+
+import java.io.File;
 
 /**
  * Class dealing with showing minecraft surface and taking inputs to dispatch them to minecraft
@@ -82,6 +85,8 @@ public class LauncherGLSurface extends View implements GrabListener, GamepadEnab
     final Object mSurfaceReadyListenerLock = new Object();
     /* View holding the surface, either a SurfaceView or a TextureView */
     View mSurface;
+    /* Instance game directory whose options must be prepared before JVM launch. */
+    private String mGameDirectoryPath;
 
     private final InGameEventProcessor mIngameProcessor = new InGameEventProcessor(this, mSensitivityFactor);
     private final InGUIEventProcessor mInGUIProcessor = new InGUIEventProcessor(this);
@@ -113,6 +118,11 @@ public class LauncherGLSurface extends View implements GrabListener, GamepadEnab
      *                 when the cursor is not grabbed
      */
     public void start(boolean isAlreadyRunning, View touchpad) {
+        start(isAlreadyRunning, touchpad, null);
+    }
+
+    public void start(boolean isAlreadyRunning, View touchpad, String gameDirectoryPath) {
+        if (gameDirectoryPath != null) mGameDirectoryPath = gameDirectoryPath;
         // A service reconnect can deliver this callback more than once. Reusing the
         // existing surface prevents duplicate SurfaceView/TextureView instances and
         // the resulting extra composition work.
@@ -352,19 +362,32 @@ public class LauncherGLSurface extends View implements GrabListener, GamepadEnab
     }
 
     private void realStart(){
-        // Initial size set. Request immedate refresh, otherwise the initial width and height for the game
+        // Initial size set. Request immediate refresh, otherwise the initial width and height for the game
         // may be broken/unknown.
         refreshSize(true);
 
-        //Load Minecraft options:
-        MCOptionUtils.set("fullscreen", "off");
-        MCOptionUtils.set("overrideWidth", String.valueOf(windowWidth));
-        MCOptionUtils.set("overrideHeight", String.valueOf(windowHeight));
-        MCOptionUtils.save();
-        getMcScale();
-
+        final String gameDirectoryPath = mGameDirectoryPath;
         new Thread(() -> {
             try {
+                // Keep default-settings extraction, options.txt parsing and the optional rewrite
+                // off Android's UI thread. This is part of the JVM launch preparation and can
+                // otherwise visibly stall the black handoff screen on slower external storage.
+                if (gameDirectoryPath != null) {
+                    File gameDirectory = new File(gameDirectoryPath);
+                    AsyncAssetManager.extractDefaultSettings(getContext(), gameDirectory);
+                    MCOptionUtils.load(gameDirectoryPath);
+                } else {
+                    MCOptionUtils.load();
+                }
+
+                boolean optionsChanged = false;
+                optionsChanged |= MCOptionUtils.setIfChanged("fullscreen", "off");
+                optionsChanged |= MCOptionUtils.setIfChanged("overrideWidth", String.valueOf(windowWidth));
+                optionsChanged |= MCOptionUtils.setIfChanged("overrideHeight", String.valueOf(windowHeight));
+                if (optionsChanged) MCOptionUtils.save();
+                getMcScale();
+                Tools.runOnUiThread(MCOptionUtils::notifyListeners);
+
                 // Wait until the listener is attached
                 synchronized(mSurfaceReadyListenerLock) {
                     if(mSurfaceReadyListener == null) mSurfaceReadyListenerLock.wait();

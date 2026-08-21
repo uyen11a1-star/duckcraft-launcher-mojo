@@ -33,13 +33,13 @@ public class MCOptionUtils {
     }
 
 
-    public static void load(){
+    public static synchronized void load(){
         load(sOptionFolderPath == null
                 ? Tools.DIR_GAME_NEW
                 : sOptionFolderPath);
     }
 
-    public static void load(@NonNull String folderPath) {
+    public static synchronized void load(@NonNull String folderPath) {
         File optionFile = new File(folderPath + "/options.txt");
         if(!optionFile.exists()) {
             try { // Needed for new instances I guess  :think:
@@ -72,21 +72,31 @@ public class MCOptionUtils {
         }
     }
 
-    public static void set(String key, String value) {
+    public static synchronized void set(String key, String value) {
         sParameterMap.put(key,value);
     }
 
+    /**
+     * Update an option only when its value actually changes.
+     * This lets the launch path skip a full options.txt rewrite on every start.
+     * @return true when the stored value changed
+     */
+    public static synchronized boolean setIfChanged(String key, String value) {
+        String previous = sParameterMap.put(key, value);
+        return !Objects.equals(previous, value);
+    }
+
     /** Set an array of String, instead of a simple value. Not supported on all options */
-    public static void set(String key, List<String> values){
+    public static synchronized void set(String key, List<String> values){
         sParameterMap.put(key, values.toString());
     }
 
-    public static String get(String key){
+    public static synchronized String get(String key){
         return sParameterMap.get(key);
     }
 
     /** @return A list of values from an array stored as a string */
-    public static List<String> getAsList(String key){
+    public static synchronized List<String> getAsList(String key){
         String value = get(key);
 
         // Fallback if the value doesn't exist
@@ -99,7 +109,7 @@ public class MCOptionUtils {
         return Arrays.asList(value.split(","));
     }
 
-    public static void save() {
+    public static synchronized void save() {
         StringBuilder result = new StringBuilder();
         for(String key : sParameterMap.keySet())
             result.append(key)

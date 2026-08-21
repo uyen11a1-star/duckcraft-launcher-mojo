@@ -59,7 +59,6 @@ import net.kdt.pojavlaunch.lifecycle.ContextExecutor;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 import net.kdt.pojavlaunch.prefs.QuickSettingSideDialog;
 import net.kdt.pojavlaunch.services.GameService;
-import net.kdt.pojavlaunch.tasks.AsyncAssetManager;
 import net.kdt.pojavlaunch.utils.JREUtils;
 import net.kdt.pojavlaunch.utils.MCOptionUtils;
 import net.kdt.pojavlaunch.authenticator.accounts.Account;
@@ -119,8 +118,8 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             finish();
             return;
         }
-        AsyncAssetManager.extractDefaultSettings(this, instance.getGameDirectory());
-        MCOptionUtils.load(instance.getGameDirectory().getAbsolutePath());
+        // Instance options are prepared by LauncherGLSurface after the Android surface is
+        // visible, so Activity creation does not block on external-storage I/O.
 
         Intent gameServiceIntent = new Intent(this, GameService.class);
         // Start the service a bit early
@@ -536,7 +535,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     public void onServiceConnected(ComponentName name, IBinder service) {
         GameService.LocalBinder localBinder = (GameService.LocalBinder) service;
         mServiceBinder = localBinder;
-        launcherGLView.start(localBinder.isActive, cursor);
+        launcherGLView.start(localBinder.isActive, cursor, instance.getGameDirectory().getAbsolutePath());
         localBinder.isActive = true;
     }
 
