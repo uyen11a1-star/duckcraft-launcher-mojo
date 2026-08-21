@@ -217,7 +217,7 @@ public class GameRunner {
         int requiredJavaVersion = 8;
         if(versionInfo.javaVersion != null) requiredJavaVersion = versionInfo.javaVersion.majorVersion;
 
-        Runtime runtime = MultiRTUtils.forceReread(pickRuntime(instance, requiredJavaVersion));
+        Runtime runtime = pickRuntime(instance, requiredJavaVersion);
 
         // Pre-process specific files
         disableSplash(gamedir);
@@ -412,19 +412,20 @@ public class GameRunner {
         return strList;
     }
 
-    public static @NonNull String pickRuntime(Instance instance, int targetJavaVersion) {
-        String runtime = Tools.getSelectedRuntime(instance);
+    public static @NonNull Runtime pickRuntime(Instance instance, int targetJavaVersion) {
+        String runtimeName = Tools.getSelectedRuntime(instance);
         String profileRuntime = instance.selectedRuntime;
-        Runtime pickedRuntime = MultiRTUtils.read(runtime);
-        if(runtime == null || pickedRuntime.javaVersion == 0 || pickedRuntime.javaVersion < targetJavaVersion) {
+        Runtime pickedRuntime = MultiRTUtils.read(runtimeName);
+        if(runtimeName == null || pickedRuntime.javaVersion == 0 || pickedRuntime.javaVersion < targetJavaVersion) {
             String preferredRuntime = MultiRTUtils.getNearestJreName(targetJavaVersion);
             if(preferredRuntime == null) throw new RuntimeException("Failed to autopick runtime!");
             if(profileRuntime != null) {
                 instance.selectedRuntime = preferredRuntime;
                 instance.maybeWrite();
             }
-            runtime = preferredRuntime;
+            runtimeName = preferredRuntime;
+            pickedRuntime = MultiRTUtils.read(runtimeName);
         }
-        return runtime;
+        return pickedRuntime;
     }
 }
