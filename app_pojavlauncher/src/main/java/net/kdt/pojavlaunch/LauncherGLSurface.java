@@ -406,9 +406,8 @@ public class LauncherGLSurface extends View implements GrabListener, GamepadEnab
             updateGrabState(isGrabbing);
             // The first native grab callback means the game has reached its input setup.
             // Reveal dense custom controls only after that point, not during black startup.
-            View parent = getParent();
-            if (parent instanceof ControlLayout) {
-                ControlLayout controlLayout = (ControlLayout) parent;
+            if (getParent() instanceof ControlLayout) {
+                ControlLayout controlLayout = (ControlLayout) getParent();
                 if (!controlLayout.areControlVisible()) {
                     controlLayout.setControlVisible(true);
                 }
