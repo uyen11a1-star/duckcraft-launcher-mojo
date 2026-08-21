@@ -7,10 +7,21 @@ import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
+import android.os.Build;
 import android.util.Log;
+
+import net.kdt.pojavlaunch.Tools;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 public class GLInfoUtils {
     public static String GLES_VERSION_PREFIX = "OpenGL ES ";
+    private static final String GL_INFO_CACHE_FILE = "gl_info.properties";
+    private static final String GL_INFO_CACHE_VERSION = "1";
     private static GLInfo info;
 
     private static int getMajorGLVersion(String versionString) {
@@ -136,12 +147,63 @@ public class GLInfoUtils {
         return true;
     }
 
+    private static String cacheKey() {
+        return Build.FINGERPRINT + "|" + Build.VERSION.SDK_INT;
+    }
+
+    private static GLInfo readCachedInfo() {
+        File cacheFile = new File(Tools.DIR_CACHE, GL_INFO_CACHE_FILE);
+        if(!cacheFile.isFile()) return null;
+        Properties properties = new Properties();
+        try (FileInputStream input = new FileInputStream(cacheFile)) {
+            properties.load(input);
+            if(!GL_INFO_CACHE_VERSION.equals(properties.getProperty("version")) ||
+                    !cacheKey().equals(properties.getProperty("device"))) return null;
+            String vendor = properties.getProperty("vendor");
+            String renderer = properties.getProperty("renderer");
+            int glesVersion = Integer.parseInt(properties.getProperty("glesMajor"));
+            boolean forcedMsaa = Boolean.parseBoolean(properties.getProperty("forcedMsaa"));
+            if(vendor == null || renderer == null || glesVersion < 2) return null;
+            Log.i("GLInfoUtils", "Using cached graphics device info");
+            return new GLInfo(vendor, renderer, glesVersion, forcedMsaa);
+        } catch (IOException | NumberFormatException | SecurityException ignored) {
+            return null;
+        }
+    }
+
+    private static void writeCachedInfo(GLInfo value) {
+        File cacheDir = Tools.DIR_CACHE;
+        if(!cacheDir.exists() && !cacheDir.mkdirs()) return;
+        File cacheFile = new File(cacheDir, GL_INFO_CACHE_FILE);
+        File tempFile = new File(cacheDir, GL_INFO_CACHE_FILE + ".tmp");
+        Properties properties = new Properties();
+        properties.setProperty("version", GL_INFO_CACHE_VERSION);
+        properties.setProperty("device", cacheKey());
+        properties.setProperty("vendor", value.vendor);
+        properties.setProperty("renderer", value.renderer);
+        properties.setProperty("glesMajor", Integer.toString(value.glesMajorVersion));
+        properties.setProperty("forcedMsaa", Boolean.toString(value.forcedMsaa));
+        try (FileOutputStream output = new FileOutputStream(tempFile)) {
+            properties.store(output, "Cached GLES device information");
+        } catch (IOException | SecurityException e) {
+            // A failed cache write must never affect game startup.
+            return;
+        }
+        if(!tempFile.renameTo(cacheFile)) {
+            // Android may refuse replacing an existing file with renameTo().
+            if(cacheFile.delete()) tempFile.renameTo(cacheFile);
+        }
+    }
+
     /**
      * Get the information about the current OpenGL ES device, which consists of the vendor,
-     * the renderer and the major GLES version
+     * the renderer and the major GLES version. The result is persisted per device build so the
+     * expensive EGL pbuffer/context probe is not repeated on every game launch.
      * @return the info
      */
-    public static GLInfo getGlInfo() {
+    public static synchronized GLInfo getGlInfo() {
+        if(info != null) return info;
+        info = readCachedInfo();
         if(info != null) return info;
         Log.i("GLInfoUtils", "Querying graphics device info...");
         boolean infoQueryResult = false;
@@ -151,6 +213,7 @@ public class GLInfoUtils {
             Log.e("GLInfoUtils", "Throwable when trying to initialize GL info", e);
         }
         if(!infoQueryResult) initDummyInfo();
+        else writeCachedInfo(info);
         return info;
     }
 
