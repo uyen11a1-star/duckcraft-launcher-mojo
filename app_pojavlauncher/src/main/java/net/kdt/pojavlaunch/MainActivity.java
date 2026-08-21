@@ -289,7 +289,9 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             Tools.showError(this, th);
         }
         mDrawerPullButton.setVisibility(mControlLayout.hasMenuButton() ? View.GONE : View.VISIBLE);
-        mControlLayout.toggleControlVisible();
+        // Dense custom keyboards are expensive to measure and draw while the game is still
+        // creating its surface. Keep them hidden until GLFW reports the first input state.
+        mControlLayout.setControlVisible(GLFW.isGrabbing());
     }
 
     @Override

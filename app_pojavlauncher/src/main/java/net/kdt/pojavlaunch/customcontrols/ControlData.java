@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Keep
 public class ControlData {
@@ -37,6 +38,24 @@ public class ControlData {
     private static List<String> SPECIAL_BUTTON_NAME_ARRAY;
     private static WeakReference<ExpressionBuilder> builder = new WeakReference<>(null);
     private static WeakReference<ArrayMap<String, String>> conversionMap = new WeakReference<>(null);
+
+    // Dynamic positions are evaluated during every parent layout pass. Keep the last result for
+    // each axis so dense control maps do not rebuild exp4j expressions when the geometry is
+    // unchanged. These fields are runtime-only and are intentionally excluded from JSON.
+    private transient String cachedDynamicX;
+    private transient String cachedDynamicY;
+    private transient int cachedXLayoutWidth = Integer.MIN_VALUE;
+    private transient int cachedXLayoutHeight = Integer.MIN_VALUE;
+    private transient int cachedYLayoutWidth = Integer.MIN_VALUE;
+    private transient int cachedYLayoutHeight = Integer.MIN_VALUE;
+    private transient float cachedXControlWidth = Float.NaN;
+    private transient float cachedXControlHeight = Float.NaN;
+    private transient float cachedYControlWidth = Float.NaN;
+    private transient float cachedYControlHeight = Float.NaN;
+    private transient float cachedXPreferredScale = Float.NaN;
+    private transient float cachedYPreferredScale = Float.NaN;
+    private transient float cachedXResult;
+    private transient float cachedYResult;
 
     static {
         buildExpressionBuilder();
@@ -251,6 +270,57 @@ public class ControlData {
     }
 
     public float insertDynamicPos(String dynamicPos, int w, int h) {
+        // Keep the original uncached API for callers that need to evaluate an arbitrary expression.
+        return calculatePosition(dynamicPos, w, h);
+    }
+
+    public float insertDynamicX(int w, int h) {
+        float controlWidth = getWidth();
+        float controlHeight = getHeight();
+        float preferredScale = LauncherPreferences.PREF_BUTTONSIZE;
+        if (Objects.equals(dynamicX, cachedDynamicX)
+                && cachedXLayoutWidth == w
+                && cachedXLayoutHeight == h
+                && Float.compare(cachedXControlWidth, controlWidth) == 0
+                && Float.compare(cachedXControlHeight, controlHeight) == 0
+                && Float.compare(cachedXPreferredScale, preferredScale) == 0) {
+            return cachedXResult;
+        }
+
+        cachedDynamicX = dynamicX;
+        cachedXLayoutWidth = w;
+        cachedXLayoutHeight = h;
+        cachedXControlWidth = controlWidth;
+        cachedXControlHeight = controlHeight;
+        cachedXPreferredScale = preferredScale;
+        cachedXResult = calculatePosition(dynamicX, w, h);
+        return cachedXResult;
+    }
+
+    public float insertDynamicY(int w, int h) {
+        float controlWidth = getWidth();
+        float controlHeight = getHeight();
+        float preferredScale = LauncherPreferences.PREF_BUTTONSIZE;
+        if (Objects.equals(dynamicY, cachedDynamicY)
+                && cachedYLayoutWidth == w
+                && cachedYLayoutHeight == h
+                && Float.compare(cachedYControlWidth, controlWidth) == 0
+                && Float.compare(cachedYControlHeight, controlHeight) == 0
+                && Float.compare(cachedYPreferredScale, preferredScale) == 0) {
+            return cachedYResult;
+        }
+
+        cachedDynamicY = dynamicY;
+        cachedYLayoutWidth = w;
+        cachedYLayoutHeight = h;
+        cachedYControlWidth = controlWidth;
+        cachedYControlHeight = controlHeight;
+        cachedYPreferredScale = preferredScale;
+        cachedYResult = calculatePosition(dynamicY, w, h);
+        return cachedYResult;
+    }
+
+    private float calculatePosition(String dynamicPos, int w, int h) {
         // Insert value to ${variable}
         String insertedPos = JSONUtils.insertSingleJSONValue(dynamicPos, fillConversionMap(w, h));
 

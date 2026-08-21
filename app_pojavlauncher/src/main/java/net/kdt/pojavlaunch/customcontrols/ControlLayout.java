@@ -690,8 +690,8 @@ public class ControlLayout extends FrameLayout {
 						interfaceView.getRight(), interfaceView.getBottom()
 				);
 			} else {
-				int l = (int) (properties.insertDynamicPos(properties.dynamicX, w, h) + left);
-				int t = (int) (properties.insertDynamicPos(properties.dynamicY, w, h) + top);
+				int l = (int) (properties.insertDynamicX(w, h) + left);
+				int t = (int) (properties.insertDynamicY(w, h) + top);
 
 				int r = l + width;
 				int b = t + height;
