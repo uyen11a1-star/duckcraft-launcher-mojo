@@ -17,7 +17,7 @@
             android:title="@string/mobileglues_settings_title"
             android:summary="@string/mobileglues_settings_description"
             android:fragment="net.kdt.pojavlaunch.prefs.screens.LauncherPreferenceMobileGluesFragment"
-            android:icon="@drawable/ic_sharp_settings_24" />
+            android:icon="@drawable/ic_px_settings" />
 
         <androidx.preference.SwitchPreferenceCompat
             android:defaultValue="false"

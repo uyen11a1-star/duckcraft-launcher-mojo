@@ -20,7 +20,7 @@
             android:key="mobileglues_reset"
             android:title="@string/mobileglues_reset_title"
             android:summary="@string/mobileglues_reset_description"
-            android:icon="@drawable/ic_sharp_settings_24" />
+            android:icon="@drawable/ic_px_settings" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/mcl_setting_category_renderer">
